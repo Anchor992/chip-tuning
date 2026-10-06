@@ -132,7 +132,7 @@ async def discover_avt_links(session: aiohttp.ClientSession) -> list[str]:
                 links.add(href)
 
         # Some catalogue pages expose item IDs in inline JSON/scripts.
-        for match in re.findall(r"https?://[^\\"']+/catalog/item/\?id=\d+", html):
+        for match in re.findall(r"https?://[^\'"]+/catalog/item/\?id=\d+", html):
             links.add(match)
 
     # Sitemap is useful because AVT's catalogue can be rendered dynamically.

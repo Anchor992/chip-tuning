@@ -1,0 +1,25 @@
+name: Probe AllChip catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/probe-allchip.yml"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download database page
+        run: |
+          python - <<'PY'
+          import requests,re
+          u='https://test.allchiptuningfiles.com/vehicle-database'
+          r=requests.get(u,timeout=30,headers={'User-Agent':'Mozilla/5.0'})
+          print('status',r.status_code,'len',len(r.text))
+          links=sorted(set(re.findall(r'href=["\']([^"\']*/vehicles/[^"\']+)["\']',r.text)))
+          print('vehicle links',len(links))
+          print('\n'.join(links[:30]))
+          print('contains 10592', '10,592' in r.text)
+          PY

@@ -120,21 +120,34 @@ async def fetch(session: aiohttp.ClientSession, url: str) -> str | None:
 
 
 async def discover_avt_links(session: aiohttp.ClientSession) -> list[str]:
-    html = await fetch(session, AVT_CATALOG)
-    if not html:
-        return []
-
-    soup = BeautifulSoup(html, "lxml")
     links: set[str] = set()
 
-    for a in soup.find_all("a", href=True):
-        href = urljoin(AVT_CATALOG, a["href"])
-        if "/catalog/item/" in href:
-            links.add(href)
+    # Main catalogue page.
+    html = await fetch(session, AVT_CATALOG)
+    if html:
+        soup = BeautifulSoup(html, "lxml")
+        for a in soup.find_all("a", href=True):
+            href = urljoin(AVT_CATALOG, a["href"])
+            if "/catalog/item/" in href:
+                links.add(href)
 
-    # Some catalog pages expose item IDs in script/JSON.
-    for match in re.findall(r"https?://[^\"']+/catalog/item/\?id=\d+", html):
-        links.add(match)
+        # Some catalogue pages expose item IDs in inline JSON/scripts.
+        for match in re.findall(r"https?://[^\\"']+/catalog/item/\?id=\d+", html):
+            links.add(match)
+
+    # Sitemap is useful because AVT's catalogue can be rendered dynamically.
+    for sitemap_url in ("https://avt.ru/sitemap.xml", "https://avt.ru/robots.txt"):
+        sitemap = await fetch(session, sitemap_url)
+        if not sitemap:
+            continue
+        for loc in re.findall(r"<loc>\s*(https?://[^<]+/catalog/item/\?id=\d+)\s*</loc>", sitemap, re.I):
+            links.add(loc)
+        for loc in re.findall(r"(?im)^\s*Sitemap:\s*(https?://\S+)", sitemap):
+            if loc.endswith("sitemap.xml"):
+                child = await fetch(session, loc)
+                if child:
+                    for item_url in re.findall(r"<loc>\s*(https?://[^<]+/catalog/item/\?id=\d+)\s*</loc>", child, re.I):
+                        links.add(item_url)
 
     return sorted(links)
 

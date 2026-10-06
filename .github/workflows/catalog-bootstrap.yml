@@ -1,0 +1,39 @@
+name: Build full AVT catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/build_catalog.py"
+      - "data/seed.json"
+      - ".github/workflows/catalog-bootstrap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install crawler dependencies
+        run: pip install aiohttp beautifulsoup4 lxml
+
+      - name: Crawl AVT
+        run: python scripts/build_catalog.py --start 1 --end 15050 --concurrency 8
+
+      - name: Commit catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/catalog.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update full AVT catalog"
+          git push

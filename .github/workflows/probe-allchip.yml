@@ -15,7 +15,7 @@ jobs:
         run: |
           python - <<'PY'
           import requests,re
-          u='https://test.allchiptuningfiles.com/vehicle-database'
+          u='https://www.allchiptuningfiles.com/vehicle-database'
           r=requests.get(u,timeout=30,headers={'User-Agent':'Mozilla/5.0'})
           print('status',r.status_code,'len',len(r.text))
           links=sorted(set(re.findall(r'href=["\']([^"\']*/vehicles/[^"\']+)["\']',r.text)))

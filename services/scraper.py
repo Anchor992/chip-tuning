@@ -4,7 +4,7 @@ import asyncio
 import json
 import re
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, parse_qs
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -15,12 +15,13 @@ ADACT_PRICE_PAGES = [
     "https://ufa.adact2.ru/price",
     "https://omsk.adact2.ru/price",
 ]
+
 DATA_DIR = Path("data")
 CATALOG_FILE = DATA_DIR / "catalog.json"
 SEED_FILE = DATA_DIR / "seed.json"
 
 HEADERS = {
-    "User-Agent": "ChipTuningCatalogBot/1.0 (+catalog updater)",
+    "User-Agent": "ChipTuningCatalogBot/1.0",
     "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.7",
 }
 
@@ -35,119 +36,116 @@ BRANDS = [
 def _num(text: str | None) -> int | None:
     if not text:
         return None
-    m = re.search(r"(-?\d+(?:[.,]\d+)?)", text.replace(" ", ""))
-    if not m:
+    match = re.search(r"-?\d+(?:[.,]\d+)?", text.replace(" ", ""))
+    if not match:
         return None
-    return int(float(m.group(1).replace(",", ".")))
+    return int(float(match.group(0).replace(",", ".")))
+
+
+def _extract_pair(text: str, unit: str) -> tuple[int | None, int | None]:
+    values = [int(x) for x in re.findall(r"\d{2,4}", text) if 20 <= int(x) <= 2000]
+    if len(values) < 2:
+        return None, None
+    return values[-2], values[-1]
 
 
 def _extract_power_pair(soup: BeautifulSoup) -> tuple[int | None, int | None]:
     text = soup.get_text(" ", strip=True)
-    m = re.search(
-        r"Мощность двигателя.*?До.*?После\s*\+?\s*([+-]?\d+)\s*л\.с\..*?"
-        r"(\d+)\s*л\.с\..*?(\d+)\s*л\.с\.",
-        text,
-        re.I,
-    )
-    if m:
-        return int(m.group(2)), int(m.group(3))
-
-    # Fallback: look around Stage 1 block.
-    vals = re.findall(r"(\d{2,4})\s*л\.с\.", text)
-    if len(vals) >= 2:
-        return int(vals[-2]), int(vals[-1])
-    return None, None
+    section = re.search(r"Мощность двигателя(.{0,700})", text, re.I)
+    return _extract_pair(section.group(1), "л.с.") if section else _extract_pair(text, "л.с.")
 
 
 def _extract_torque_pair(soup: BeautifulSoup) -> tuple[int | None, int | None]:
     text = soup.get_text(" ", strip=True)
-    m = re.search(
-        r"Крутящий момент.*?До.*?После\s*\+?\s*([+-]?\d+)\s*Нм.*?"
-        r"(\d+)\s*Нм.*?(\d+)\s*Нм",
-        text,
-        re.I,
-    )
-    if m:
-        return int(m.group(2)), int(m.group(3))
-
-    vals = re.findall(r"(\d{2,4})\s*Нм", text)
-    if len(vals) >= 2:
-        return int(vals[-2]), int(vals[-1])
-    return None, None
+    section = re.search(r"Крутящий момент(.{0,700})", text, re.I)
+    return _extract_pair(section.group(1), "Нм") if section else _extract_pair(text, "Нм")
 
 
 def _parse_title(title: str) -> tuple[str, str, str, str]:
-    # Typical AVT title:
-    # Чип-тюнинг Volkswagen Golf 2012 -> 2017 1.4 TFSI 150 hp
-    title = re.sub(r"^Чип-тюнинг\s+", "", title, flags=re.I).strip()
-    m = re.match(
-        r"(?P<brand>\S+)\s+(?P<model>.+?)\s+(?P<year>\d{4}\s*(?:->|–|-)\s*[^\s]+)?\s*(?P<engine>.+?)\s+(?P<hp>\d+)\s*hp$",
-        title,
-        re.I,
-    )
-    if m:
-        return m.group("brand"), m.group("model"), m.group("year") or "", m.group("engine")
-    parts = title.split()
-    brand = parts[0] if parts else "Unknown"
-    return brand, " ".join(parts[1:]), "", ""
+    cleaned = re.sub(r"^Чип-тюнинг\s+", "", title, flags=re.I).strip()
+    parts = cleaned.split()
+    if not parts:
+        return "Unknown", "Unknown", "", ""
+    brand = parts[0]
+    rest = parts[1:]
+    hp_index = next((i for i, p in enumerate(rest) if p.lower().replace("л.с.", "") == "hp"), None)
+    if hp_index is not None:
+        rest = rest[:hp_index]
+    year_index = next((i for i, p in enumerate(rest) if re.fullmatch(r"20\d{2}", p)), None)
+    year = ""
+    if year_index is not None:
+        year = rest[year_index]
+    model = rest[0] if rest else "Unknown"
+    engine = " ".join(rest[1:]) if len(rest) > 1 else ""
+    return brand, model, year, engine
 
 
-def _find_image(soup: BeautifulSoup, base: str) -> str | None:
-    candidates = []
+def _find_image(soup: BeautifulSoup, base_url: str) -> str | None:
     og = soup.find("meta", attrs={"property": "og:image"})
     if og and og.get("content"):
-        candidates.append(og["content"])
-    for img in soup.find_all("img"):
-        src = img.get("src") or img.get("data-src")
-        if src:
-            candidates.append(src)
-    for src in candidates:
-        src = urljoin(base, src)
-        low = src.lower()
-        if any(x in low for x in (".png", ".jpg", ".jpeg", ".webp")):
-            return src
+        return urljoin(base_url, og["content"])
+    for image in soup.find_all("img"):
+        source = image.get("src") or image.get("data-src")
+        if source and any(ext in source.lower() for ext in (".png", ".jpg", ".jpeg", ".webp")):
+            return urljoin(base_url, source)
     return None
 
 
 async def fetch(session: aiohttp.ClientSession, url: str) -> str | None:
     try:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=30), allow_redirects=True) as r:
-            if r.status != 200:
+        async with session.get(
+            url,
+            timeout=aiohttp.ClientTimeout(total=20),
+            allow_redirects=True,
+        ) as response:
+            if response.status != 200:
                 return None
-            return await r.text()
+            return await response.text()
     except (aiohttp.ClientError, asyncio.TimeoutError):
         return None
+
+
+def _valid_item_url(url: str) -> bool:
+    parsed = urlparse(url)
+    return "/catalog/item/" in parsed.path and bool(parse_qs(parsed.query).get("id"))
 
 
 async def discover_avt_links(session: aiohttp.ClientSession) -> list[str]:
     links: set[str] = set()
 
-    # Main catalogue page.
     html = await fetch(session, AVT_CATALOG)
     if html:
         soup = BeautifulSoup(html, "lxml")
-        for a in soup.find_all("a", href=True):
-            href = urljoin(AVT_CATALOG, a["href"])
-            if "/catalog/item/" in href:
-                links.add(href)
+        for anchor in soup.find_all("a", href=True):
+            url = urljoin(AVT_CATALOG, anchor["href"])
+            if _valid_item_url(url):
+                links.add(url)
 
-        # Some catalogue pages expose item IDs in inline JSON/scripts.
-        for match in re.findall(r'https?://[^\'"]+/catalog/item/\?id=\d+', html):
-            links.add(match)
-
-    # Sitemap is useful because AVT's catalogue can be rendered dynamically.
-    for sitemap_url in ("https://avt.ru/sitemap.xml", "https://avt.ru/robots.txt"):
-        sitemap = await fetch(session, sitemap_url)
-        if not sitemap:
+    for source_url in ("https://avt.ru/sitemap.xml", "https://avt.ru/robots.txt"):
+        body = await fetch(session, source_url)
+        if not body:
             continue
-        for loc in re.findall(r"<loc>\s*(https?://[^<]+/catalog/item/\?id=\d+)\s*</loc>", sitemap, re.I):
-            links.add(loc)
-        for loc in re.findall(r"(?im)^\s*Sitemap:\s*(https?://\S+)", sitemap):
-            if loc.endswith("sitemap.xml"):
-                child = await fetch(session, loc)
-                if child:
-                    for item_url in re.findall(r"<loc>\s*(https?://[^<]+/catalog/item/\?id=\d+)\s*</loc>", child, re.I):
-                        links.add(item_url)
+
+        if source_url.endswith("robots.txt"):
+            sitemap_urls = []
+            for line in body.splitlines():
+                if line.lower().startswith("sitemap:"):
+                    sitemap_urls.append(line.split(":", 1)[1].strip())
+            for sitemap_url in sitemap_urls:
+                xml = await fetch(session, sitemap_url)
+                if not xml:
+                    continue
+                xml_soup = BeautifulSoup(xml, "xml")
+                for loc in xml_soup.find_all("loc"):
+                    value = loc.get_text(strip=True)
+                    if _valid_item_url(value):
+                        links.add(value)
+        else:
+            xml_soup = BeautifulSoup(body, "xml")
+            for loc in xml_soup.find_all("loc"):
+                value = loc.get_text(strip=True)
+                if _valid_item_url(value):
+                    links.add(value)
 
     return sorted(links)
 
@@ -160,9 +158,11 @@ async def parse_avt_item(session: aiohttp.ClientSession, url: str) -> dict | Non
     soup = BeautifulSoup(html, "lxml")
     title_node = soup.find("h1")
     title = title_node.get_text(" ", strip=True) if title_node else ""
+
     if not title:
-        og_title = soup.find("meta", attrs={"property": "og:title"})
-        title = og_title.get("content", "") if og_title else ""
+        meta = soup.find("meta", attrs={"property": "og:title"})
+        title = meta.get("content", "") if meta else ""
+
     if not title:
         return None
 
@@ -170,20 +170,18 @@ async def parse_avt_item(session: aiohttp.ClientSession, url: str) -> dict | Non
     stock_hp, stage1_hp = _extract_power_pair(soup)
     stock_nm, stage1_nm = _extract_torque_pair(soup)
 
-    price = None
-    text = soup.get_text(" ", strip=True)
-    pm = re.search(r"Стоимость работ:\s*([\d\s]+)", text, re.I)
-    if pm:
-        price = _num(pm.group(1))
+    page_text = soup.get_text(" ", strip=True)
+    price_match = re.search(r"Стоимость работ:\s*([\d\s]+)", page_text, re.I)
+    price = _num(price_match.group(1)) if price_match else None
 
-    item_id = re.search(r"[?&]id=(\d+)", url)
-    ident = f"avt-{item_id.group(1)}" if item_id else url
+    query_id = parse_qs(urlparse(url).query).get("id", [None])[0]
+    item_id = f"avt-{query_id}" if query_id else url
 
     if stock_hp is None or stage1_hp is None:
         return None
 
     return {
-        "id": ident,
+        "id": item_id,
         "brand": brand,
         "model": model,
         "year": year,
@@ -200,42 +198,46 @@ async def parse_avt_item(session: aiohttp.ClientSession, url: str) -> dict | Non
     }
 
 
-async def scrape_avt(limit: int = 250) -> list[dict]:
-    connector = aiohttp.TCPConnector(limit=8, ssl=False)
+async def scrape_avt(limit: int = 150) -> list[dict]:
+    connector = aiohttp.TCPConnector(limit=6, ssl=False)
     async with aiohttp.ClientSession(headers=HEADERS, connector=connector) as session:
-        links = await discover_avt_links(session)
+        links = (await discover_avt_links(session))[:limit]
         if not links:
             return []
 
-        # Avoid hammering the source; catalogue refresh is intentionally conservative.
-        links = links[:limit]
-        sem = asyncio.Semaphore(6)
+        semaphore = asyncio.Semaphore(5)
 
-        async def one(url: str):
-            async with sem:
+        async def parse_one(url: str):
+            async with semaphore:
                 return await parse_avt_item(session, url)
 
-        results = await asyncio.gather(*(one(u) for u in links))
-        return [x for x in results if x and x.get("stock_hp") and x.get("stage1_hp")]
+        results = await asyncio.gather(*(parse_one(url) for url in links))
+        return [item for item in results if item]
 
 
 async def scrape_adact_prices() -> dict[str, int]:
     prices: dict[str, int] = {}
-    connector = aiohttp.TCPConnector(limit=3, ssl=False)
+    connector = aiohttp.TCPConnector(limit=2, ssl=False)
+
     async with aiohttp.ClientSession(headers=HEADERS, connector=connector) as session:
         for url in ADACT_PRICE_PAGES:
             html = await fetch(session, url)
             if not html:
                 continue
-            soup = BeautifulSoup(html, "lxml")
-            text = soup.get_text(" ", strip=True)
+            text = BeautifulSoup(html, "lxml").get_text(" ", strip=True)
             for brand in BRANDS:
-                pattern = rf"\b{re.escape(brand)}\s*\|?\s*от\s*([\d\s]+)\s*руб"
-                m = re.search(pattern, text, re.I)
-                if m:
-                    prices[brand.lower()] = _num(m.group(1)) or 0
+                match = re.search(
+                    rf"\b{re.escape(brand)}\s*\|?\s*от\s*([\d\s]+)\s*руб",
+                    text,
+                    re.I,
+                )
+                if match:
+                    value = _num(match.group(1))
+                    if value:
+                        prices[brand.lower()] = value
             if prices:
                 break
+
     return prices
 
 
@@ -248,32 +250,33 @@ def apply_adact_prices(items: list[dict], prices: dict[str, int]) -> list[dict]:
 
 async def refresh_catalog() -> list[dict]:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    fresh = await scrape_avt()
 
-    if fresh:
+    live_items = await scrape_avt()
+    seed_items = json.loads(SEED_FILE.read_text(encoding="utf-8"))
+
+    if live_items:
         prices = await scrape_adact_prices()
-        fresh = apply_adact_prices(fresh, prices)
-        # Keep a small amount of known seed data if the live catalogue temporarily
-        # omits it; live data wins by ID.
-        seed = json.loads(SEED_FILE.read_text(encoding="utf-8"))
-        by_id = {x["id"]: x for x in seed}
-        by_id.update({x["id"]: x for x in fresh})
-        items = list(by_id.values())
-        CATALOG_FILE.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
-        return items
+        live_items = apply_adact_prices(live_items, prices)
+        merged = {item["id"]: item for item in seed_items}
+        merged.update({item["id"]: item for item in live_items})
+        items = list(merged.values())
+    else:
+        items = seed_items
 
-    if CATALOG_FILE.exists():
-        return json.loads(CATALOG_FILE.read_text(encoding="utf-8"))
-
-    seed = json.loads(SEED_FILE.read_text(encoding="utf-8"))
-    CATALOG_FILE.write_text(json.dumps(seed, ensure_ascii=False, indent=2), encoding="utf-8")
-    return seed
+    CATALOG_FILE.write_text(
+        json.dumps(items, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    return items
 
 
 def load_catalog() -> list[dict]:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     if CATALOG_FILE.exists():
         try:
             return json.loads(CATALOG_FILE.read_text(encoding="utf-8"))
-        except Exception:
+        except (OSError, json.JSONDecodeError):
             pass
+
     return json.loads(SEED_FILE.read_text(encoding="utf-8"))

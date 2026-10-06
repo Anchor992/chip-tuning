@@ -1,6 +1,11 @@
 name: Build tuning catalog
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/build_remap_catalog.py"
+      - ".github/workflows/catalog-remap.yml"
   workflow_dispatch:
   schedule:
     - cron: "15 4 * * *"

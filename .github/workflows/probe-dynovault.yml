@@ -1,0 +1,21 @@
+name: Probe DynoVault API
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe vehicle types
+        run: |
+          set -e
+          echo "=== vehicle-types ==="
+          curl -L --fail --max-time 30 https://dynovault.net/api/vehicle-types | head -c 10000
+          echo
+      - name: Probe search
+        run: |
+          set -e
+          echo "=== search audi a3 ==="
+          curl -G -L --fail --max-time 30 --data-urlencode 'q=audi a3' https://dynovault.net/api/search | head -c 10000
+          echo

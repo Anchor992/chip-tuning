@@ -1,0 +1,26 @@
+name: Probe Tuning Database
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/probe-tdb.yml"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe sitemap and profile
+        run: |
+          python - <<'PY'
+          import requests,re
+          for u in [
+            'https://www.tuning-database.co.uk/sitemap.xml',
+            'https://www.tuning-database.co.uk/robots.txt',
+            'https://www.tuning-database.co.uk/custom-file/vw-golf4-2-3-v5-1999-benzin-110-3kw-bosch-0261206176-071906018r-359159-stage1/'
+          ]:
+            r=requests.get(u,timeout=30,headers={'User-Agent':'Mozilla/5.0'})
+            print('\nURL',u,'status',r.status_code,'len',len(r.text))
+            print(r.text[:1200])
+          PY

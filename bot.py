@@ -293,6 +293,12 @@ async def help_cmd(message: Message):
     )
 
 
+
+@router.message(Command("ping"))
+async def ping(message: Message):
+    await message.answer("🟢 Бот работает.")
+
+
 @router.message(Command("search"))
 async def search_command(message: Message):
     SEARCH_MODE.add(message.from_user.id)
@@ -357,22 +363,14 @@ async def main():
         log.exception("Telegram authorization FAILED. Check BOT_TOKEN in Railway.")
         raise
 
-    try:
-        await bot.delete_webhook(drop_pending_updates=True)
-        log.info("Webhook removed; starting long polling.")
-    except Exception:
-        log.exception("Failed to remove webhook")
-        raise
-
-    asyncio.create_task(silent_refresh())
-    asyncio.create_task(periodic_refresh())
+    await bot.delete_webhook(drop_pending_updates=True)
+    log.info("Webhook removed; starting long polling.")
     log.info("starting bot with %s catalog items", len(CATALOG))
 
-    try:
-        await dp.start_polling(bot)
-    except Exception:
-        log.exception("Polling crashed")
-        raise
+    # Do not scrape external sites during startup. This keeps the bot responsive
+    # even when AVT/ADACT are slow or temporarily unavailable.
+    asyncio.create_task(periodic_refresh())
+    await dp.start_polling(bot)
 
 
 if __name__ == "__main__":

@@ -123,98 +123,15 @@ def parse_page(url: str, html: str) -> dict | None:
 
 
 async def fetch(session: aiohttp.ClientSession, url: str) -> str | None:
-    try:
-        async with session.get(
-            url,
-            timeout=aiohttp.ClientTimeout(total=20),
-            allow_redirects=True,
-        ) as resp:
-            if resp.status != 200:
-                return None
-            return await resp.text()
-    except (aiohttp.ClientError, asyncio.TimeoutError):
-        return None
-
-
-async def crawl(start_id: int, end_id: int, concurrency: int) -> list[dict]:
-    connector = aiohttp.TCPConnector(
-        limit=concurrency,
-        limit_per_host=concurrency,
-        ssl=False,
-    )
-    timeout = aiohttp.ClientTimeout(total=25)
-    sem = asyncio.Semaphore(concurrency)
-
-    async with aiohttp.ClientSession(
-        headers=HEADERS,
-        connector=connector,
-        timeout=timeout,
-    ) as session:
-
-        async def one(item_id: int) -> dict | None:
-            url = f"{BASE}/catalog/item/?id={item_id}"
-            async with sem:
-                html = await fetch(session, url)
-            return parse_page(url, html) if html else None
-
-        results: list[dict] = []
-        batch_size = max(50, concurrency * 5)
-        for offset in range(start_id, end_id + 1, batch_size):
-            batch_end = min(end_id, offset + batch_size - 1)
-            batch = await asyncio.gather(
-                *(one(i) for i in range(offset, batch_end + 1))
-            )
-            results.extend(item for item in batch if item)
-            print(f"scanned {batch_end}/{end_id}; found {len(results)}")
-        return results
-
-
-def merge(items: list[dict]) -> None:
-    seed = []
-    if SEED_FILE.exists():
-        seed = json.loads(SEED_FILE.read_text(encoding="utf-8"))
-
-    existing = {}
-    if DATA_FILE.exists():
+    urls = [url, 'https://r.jina.ai/' + url]
+    for candidate in urls:
         try:
-            existing = {
-                str(x["id"]): x
-                for x in json.loads(DATA_FILE.read_text(encoding="utf-8"))
-            }
-        except Exception:
-            existing = {}
+            async with session.get(candidate, timeout=aiohttp.ClientTimeout(total=30), allow_redirects=True) as resp:
+                if resp.status == 200:
+                    text = await resp.text()
+                    if 'Чип-тюнинг' in text or 'avt.ru' in text:
+                        return text
+        except (aiohttp.ClientError, asyncio.TimeoutError):
+            continue
+    return None
 
-    for item in seed:
-        existing[str(item["id"])] = item
-    for item in items:
-        existing[str(item["id"])] = item
-
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    ordered = sorted(
-        existing.values(),
-        key=lambda x: (
-            str(x.get("brand", "")).lower(),
-            str(x.get("model", "")).lower(),
-            str(x.get("engine", "")).lower(),
-        ),
-    )
-    DATA_FILE.write_text(
-        json.dumps(ordered, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    print(f"catalog written: {len(ordered)} items")
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--start", type=int, required=True)
-    parser.add_argument("--end", type=int, required=True)
-    parser.add_argument("--concurrency", type=int, default=8)
-    args = parser.parse_args()
-
-    items = asyncio.run(crawl(args.start, args.end, args.concurrency))
-    merge(items)
-
-
-if __name__ == "__main__":
-    main()

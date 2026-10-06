@@ -32,10 +32,16 @@ if not TOKEN:
 BASE_DIR = Path(__file__).resolve().parent
 SEED_FILE = BASE_DIR / "data" / "seed.json"
 
-try:
-    CATALOG = json.loads(SEED_FILE.read_text(encoding="utf-8"))
-except Exception as exc:
-    raise RuntimeError(f"Could not load {SEED_FILE}: {exc}") from exc
+def load_catalog_data() -> list[dict]:
+    data_file = BASE_DIR / "data" / "catalog.json"
+    candidate = data_file if data_file.exists() else SEED_FILE
+    try:
+        return json.loads(candidate.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise RuntimeError(f"Could not load catalog from {candidate}: {exc}") from exc
+
+
+CATALOG = load_catalog_data()
 
 bot = Bot(
     token=TOKEN,
@@ -81,11 +87,16 @@ def brands_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def models_keyboard(brand: str) -> InlineKeyboardMarkup:
+def models_keyboard(brand: str, page: int = 0) -> InlineKeyboardMarkup:
     models = sorted(
         {str(item["model"]) for item in CATALOG if str(item["brand"]) == brand},
         key=str.lower,
     )
+    page_size = 20
+    total_pages = max(1, (len(models) + page_size - 1) // page_size)
+    page = max(0, min(page, total_pages - 1))
+    current = models[page * page_size:(page + 1) * page_size]
+
     rows = [
         [
             InlineKeyboardButton(
@@ -93,31 +104,67 @@ def models_keyboard(brand: str) -> InlineKeyboardMarkup:
                 callback_data=f"model:{safe_id(brand + '|' + model)}",
             )
         ]
-        for model in models
+        for model in current
     ]
-    rows.append([
-        InlineKeyboardButton(text="⬅️ К маркам", callback_data="brands")
-    ])
+
+    nav = []
+    if page > 0:
+        nav.append(
+            InlineKeyboardButton(
+                text="⬅️",
+                callback_data=f"models:{safe_id(brand)}:{page-1}",
+            )
+        )
+    nav.append(InlineKeyboardButton(text=f"{page+1}/{total_pages}", callback_data="noop"))
+    if page < total_pages - 1:
+        nav.append(
+            InlineKeyboardButton(
+                text="➡️",
+                callback_data=f"models:{safe_id(brand)}:{page+1}",
+            )
+        )
+    rows.append(nav)
+    rows.append([InlineKeyboardButton(text="⬅️ К маркам", callback_data="brands")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def engines_keyboard(items: list[dict], brand: str) -> InlineKeyboardMarkup:
+def engines_keyboard(items: list[dict], brand: str, model_key: str, page: int = 0) -> InlineKeyboardMarkup:
+    page_size = 20
+    total_pages = max(1, (len(items) + page_size - 1) // page_size)
+    page = max(0, min(page, total_pages - 1))
+    current = items[page * page_size:(page + 1) * page_size]
+
     rows = []
-    for item in items:
-        label = (
-            f'{item["engine"]} · '
-            f'{item["stock_hp"]}→{item["stage1_hp"]} л.с.'
-        )
+    for item in current:
+        label = f'{item["engine"]} · {item["stock_hp"]}→{item["stage1_hp"]} л.с.'
         rows.append([
             InlineKeyboardButton(
                 text=label[:55],
                 callback_data=f"car:{item['id']}",
             )
         ])
+
+    nav = []
+    if page > 0:
+        nav.append(
+            InlineKeyboardButton(
+                text="⬅️",
+                callback_data=f"engines:{model_key}:{page-1}",
+            )
+        )
+    nav.append(InlineKeyboardButton(text=f"{page+1}/{total_pages}", callback_data="noop"))
+    if page < total_pages - 1:
+        nav.append(
+            InlineKeyboardButton(
+                text="➡️",
+                callback_data=f"engines:{model_key}:{page+1}",
+            )
+        )
+    rows.append(nav)
     rows.append([
         InlineKeyboardButton(
             text="⬅️ К моделям",
-            callback_data=f"brand:{safe_id(brand)}",
+            callback_data=f"modelsback:{safe_id(brand)}",
         )
     ])
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -320,7 +367,58 @@ async def choose_brand(call: CallbackQuery) -> None:
 
     await call.message.edit_text(
         f"🚗 <b>{brand}</b>\n\nВыберите модель:",
-        reply_markup=models_keyboard(brand),
+        reply_markup=models_keyboard(brand, 0),
+    )
+
+
+@router.callback_query(F.data == "noop")
+async def noop_callback(call: CallbackQuery) -> None:
+    await call.answer()
+
+
+@router.callback_query(F.data.startswith("models:"))
+async def models_page(call: CallbackQuery) -> None:
+    await call.answer()
+    _, brand_hash, page_text = call.data.split(":", 2)
+    brand = find_brand_by_hash(brand_hash)
+    if not brand:
+        await call.message.answer("Марка не найдена.")
+        return
+    await call.message.edit_text(
+        f"🚗 <b>{brand}</b>\n\nВыберите модель:",
+        reply_markup=models_keyboard(brand, int(page_text)),
+    )
+
+
+@router.callback_query(F.data.startswith("modelsback:"))
+async def models_back(call: CallbackQuery) -> None:
+    await call.answer()
+    brand = find_brand_by_hash(call.data.split(":", 1)[1])
+    if not brand:
+        await call.message.answer("Марка не найдена.")
+        return
+    await call.message.edit_text(
+        f"🚗 <b>{brand}</b>\n\nВыберите модель:",
+        reply_markup=models_keyboard(brand, 0),
+    )
+
+
+@router.callback_query(F.data.startswith("engines:"))
+async def engines_page(call: CallbackQuery) -> None:
+    await call.answer()
+    _, model_hash, page_text = call.data.split(":", 2)
+    pair = find_model_by_hash(model_hash)
+    if not pair:
+        await call.message.answer("Модель не найдена.")
+        return
+    brand, model = pair
+    items = [
+        item for item in CATALOG
+        if str(item["brand"]) == brand and str(item["model"]) == model
+    ]
+    await call.message.edit_text(
+        f"🚗 <b>{brand} {model}</b>\n\nВыберите двигатель:",
+        reply_markup=engines_keyboard(items, brand, model_hash, int(page_text)),
     )
 
 
@@ -340,7 +438,7 @@ async def choose_model(call: CallbackQuery) -> None:
 
     await call.message.edit_text(
         f"🚗 <b>{brand} {model}</b>\n\nВыберите двигатель:",
-        reply_markup=engines_keyboard(items, brand),
+        reply_markup=engines_keyboard(items, brand, call.data.split(":", 1)[1], 0),
     )
 
 

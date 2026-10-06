@@ -1,0 +1,40 @@
+name: Probe TDB sitemaps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/probe-tdb-sitemaps.yml"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find sitemaps
+        run: |
+          python - <<'PY'
+          import requests,re
+          from bs4 import BeautifulSoup
+          h={'User-Agent':'Mozilla/5.0'}
+          robots=requests.get('https://www.tuning-database.co.uk/robots.txt',headers=h,timeout=30).text
+          print('ROBOTS SITEMAPS')
+          for line in robots.splitlines():
+              if line.lower().startswith('sitemap:'):
+                  print(line)
+          candidates=[
+            'https://www.tuning-database.co.uk/sitemap_index.xml',
+            'https://www.tuning-database.co.uk/wp-sitemap.xml',
+            'https://www.tuning-database.co.uk/post-sitemap.xml',
+            'https://www.tuning-database.co.uk/product-sitemap.xml',
+            'https://www.tuning-database.co.uk/product-sitemap1.xml',
+          ]
+          for u in candidates:
+              r=requests.get(u,headers=h,timeout=30)
+              print('\nURL',u,'status',r.status_code,'len',len(r.text))
+              if r.status_code==200:
+                  soup=BeautifulSoup(r.text,'xml')
+                  locs=[x.get_text(strip=True) for x in soup.find_all('loc')]
+                  print('locs',len(locs))
+                  print('\n'.join(locs[:20]))
+          PY

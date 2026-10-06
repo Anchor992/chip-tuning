@@ -33,7 +33,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/catalog.json
+          git add -f data/catalog.json
           git diff --cached --quiet && exit 0
           git commit -m "Update full AVT catalog"
           git push

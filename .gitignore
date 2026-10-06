@@ -2,4 +2,3 @@
 __pycache__/
 *.pyc
 data/catalog.json
-data/*.tmp

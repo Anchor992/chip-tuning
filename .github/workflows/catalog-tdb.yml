@@ -1,0 +1,54 @@
+name: Build full tuning catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/build_tdb_catalog.py"
+      - ".github/workflows/catalog-tdb.yml"
+      - "data/seed.json"
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install crawler dependencies
+        run: pip install aiohttp beautifulsoup4 lxml
+
+      - name: Crawl TDB profiles
+        run: python scripts/build_tdb_catalog.py --concurrency 16
+
+      - name: Validate generated catalog
+        run: |
+          python - <<'PY'
+          import json
+          p=json.load(open("data/catalog.json",encoding="utf-8"))
+          brands=len({x["brand"] for x in p})
+          models=len({(x["brand"],x["model"]) for x in p})
+          print("entries:",len(p),"brands:",brands,"models:",models)
+          if len(p) < 1000 or brands < 20:
+              raise SystemExit("Catalog unexpectedly small; refusing to publish.")
+          PY
+
+      - name: Commit catalog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f data/catalog.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Build full tuning catalog from TDB"
+          git push

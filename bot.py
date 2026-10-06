@@ -153,58 +153,104 @@ def car_caption(item: dict) -> str:
 
 
 def graph_image(item: dict) -> BufferedInputFile:
-    width, height = 1000, 600
-    image = Image.new("RGB", (width, height), (18, 20, 24))
+    width, height = 1200, 760
+    image = Image.new("RGB", (width, height), (15, 17, 22))
     draw = ImageDraw.Draw(image)
 
     try:
         title_font = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 34
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 42
+        )
+        section_font = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 30
         )
         value_font = ImageFont.truetype(
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 28
+        )
+        small_font = ImageFont.truetype(
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 22
         )
     except OSError:
-        title_font = value_font = ImageFont.load_default()
+        title_font = section_font = value_font = small_font = ImageFont.load_default()
 
-    draw.text(
-        (40, 30),
-        f'{item["brand"]} {item["model"]} — Stage 1',
-        font=title_font,
-        fill=(245, 245, 245),
-    )
+    title = f'{item["brand"]} {item["model"]} — Stage 1'
+    draw.text((48, 30), title, font=title_font, fill=(245, 245, 245))
 
-    hp_stock = int(item["stock_hp"])
-    hp_stage = int(item["stage1_hp"])
-    max_hp = max(hp_stock, hp_stage)
-    base_y = 500
-    top_y = 140
-    bar_width = 170
+    hp0, hp1 = int(item["stock_hp"]), int(item["stage1_hp"])
+    nm0 = item.get("stock_nm")
+    nm1 = item.get("stage1_nm")
 
-    def bar_height(value: int) -> int:
-        return int((value / max_hp) * (base_y - top_y))
+    panels = [
+        ("МОЩНОСТЬ", "л.с.", hp0, hp1, 70, 185, 520),
+    ]
+    if nm0 is not None and nm1 is not None:
+        panels.append(("КРУТЯЩИЙ МОМЕНТ", "Нм", int(nm0), int(nm1), 650, 185, 1100))
 
-    for x, value, label in (
-        (220, hp_stock, "Сток"),
-        (520, hp_stage, "Stage 1"),
-    ):
-        h = bar_height(value)
-        y = base_y - h
-        draw.rectangle((x, y, x + bar_width, base_y), fill=(55, 125, 255))
-        draw.text((x + 25, y - 40), f"{value} л.с.", font=value_font, fill="white")
-        draw.text((x + 25, base_y + 20), label, font=value_font, fill=(220, 220, 220))
+    for label, unit, before, after, x_left, x_top, x_right in panels:
+        draw.rounded_rectangle(
+            (x_left, x_top, x_right, 665),
+            radius=24,
+            outline=(70, 75, 85),
+            width=2,
+            fill=(20, 23, 29),
+        )
+        draw.text((x_left + 28, x_top + 24), label, font=section_font, fill=(235, 235, 235))
 
-    if item.get("stock_nm") is not None and item.get("stage1_nm") is not None:
+        chart_left = x_left + 58
+        chart_right = x_right - 58
+        chart_bottom = 590
+        chart_top = x_top + 100
+        max_value = max(before, after)
+        min_value = max(1, int(max_value * 0.55))
+
+        def y_for(value: int) -> int:
+            span = max(1, max_value - min_value)
+            return chart_bottom - int(
+                (value - min_value) / span * (chart_bottom - chart_top)
+            )
+
+        bar_width = 115
+        gap = 85
+        x1 = chart_left + 30
+        x2 = x1 + bar_width + gap
+
+        for x, value, caption in (
+            (x1, before, "СТОК"),
+            (x2, after, "STAGE 1"),
+        ):
+            y = y_for(value)
+            draw.rounded_rectangle(
+                (x, y, x + bar_width, chart_bottom),
+                radius=12,
+                fill=(57, 122, 242),
+            )
+            draw.text(
+                (x + bar_width // 2, y - 42),
+                f"{value} {unit}",
+                anchor="mm",
+                font=value_font,
+                fill=(250, 250, 250),
+            )
+            draw.text(
+                (x + bar_width // 2, chart_bottom + 32),
+                caption,
+                anchor="mm",
+                font=small_font,
+                fill=(210, 210, 215),
+            )
+
+        gain = after - before
         draw.text(
-            (40, 550),
-            f'Нм: {item["stock_nm"]} → {item["stage1_nm"]}',
+            ((x1 + x2 + bar_width) // 2, chart_bottom - 5),
+            f"+{gain} {unit}",
+            anchor="mm",
             font=value_font,
-            fill=(255, 190, 100),
+            fill=(120, 220, 150),
         )
 
-    output = io.BytesIO()
-    image.save(output, format="PNG")
-    return BufferedInputFile(output.getvalue(), filename="stage1.png")
+    out = io.BytesIO()
+    image.save(out, format="PNG")
+    return BufferedInputFile(out.getvalue(), filename="stage1.png")
 
 
 def find_item(item_id: str) -> dict | None:
@@ -344,6 +390,21 @@ async def help_message(message: Message) -> None:
         "/search — поиск\n"
         "/ping — проверка работы бота"
     )
+
+
+@router.message(Command("reload"))
+async def reload_catalog_command(message: Message) -> None:
+    global CATALOG
+    try:
+        data_file = BASE_DIR / "data" / "catalog.json"
+        if data_file.exists():
+            CATALOG = json.loads(data_file.read_text(encoding="utf-8"))
+            await message.answer(f"🔄 Каталог перезагружен: <b>{len(CATALOG)}</b> позиций.")
+        else:
+            await message.answer("Каталог пока не собран. Используется резервный список.")
+    except Exception as exc:
+        log.exception("catalog reload failed")
+        await message.answer(f"Не удалось перечитать каталог: {type(exc).__name__}")
 
 
 @router.message()

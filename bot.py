@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import io
 import logging
+import hashlib
 import os
 import re
 from pathlib import Path
@@ -67,13 +68,17 @@ def brands_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
+def _model_key(brand: str, model: str) -> str:
+    return hashlib.sha1(f"{brand}|{model}".encode("utf-8")).hexdigest()[:10]
+
+
 def models_kb(brand: str) -> InlineKeyboardMarkup:
     models = sorted(
         {str(x.get("model", "")) for x in CATALOG if str(x.get("brand")) == brand},
         key=str.lower,
     )
     rows = [
-        [InlineKeyboardButton(text=m[:40], callback_data=f"model:{brand}:{m}")]
+        [InlineKeyboardButton(text=m[:40], callback_data=f"model:{_model_key(brand, m)}")]
         for m in models
     ]
     rows.append([InlineKeyboardButton(text="⬅️ Все марки", callback_data="brands")])
@@ -228,12 +233,24 @@ async def cb_brand(call: CallbackQuery):
 @router.callback_query(F.data.startswith("model:"))
 async def cb_model(call: CallbackQuery):
     await call.answer()
-    _, brand, model = call.data.split(":", 2)
+    key = call.data.split(":", 1)[1]
+    pairs = {
+        _model_key(str(x.get("brand", "")), str(x.get("model", ""))): (
+            str(x.get("brand", "")), str(x.get("model", ""))
+        )
+        for x in CATALOG
+    }
+    pair = pairs.get(key)
+    if not pair:
+        await call.message.answer("Модель не найдена. Откройте каталог заново.")
+        return
+    brand, model = pair
     items = [x for x in CATALOG if str(x.get("brand")) == brand and str(x.get("model")) == model]
     await call.message.edit_text(
         f"🚗 <b>{brand} {model}</b>\n\nВыберите двигатель:",
         reply_markup=cars_kb(items, f"brand:{brand}"),
     )
+
 
 
 @router.callback_query(F.data.startswith("car:"))

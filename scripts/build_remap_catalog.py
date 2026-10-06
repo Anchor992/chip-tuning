@@ -55,19 +55,29 @@ def extract_links(html: str, base_url: str, predicate) -> set[str]:
 
 
 async def fetch(session: aiohttp.ClientSession, url: str) -> str | None:
-    for attempt in range(3):
-        try:
-            async with session.get(
-                url,
-                timeout=aiohttp.ClientTimeout(total=30),
-                allow_redirects=True,
-            ) as response:
-                if response.status == 200:
-                    return await response.text()
-        except (aiohttp.ClientError, asyncio.TimeoutError):
-            if attempt == 2:
-                return None
-            await asyncio.sleep(1.5 * (attempt + 1))
+    candidates = [
+        url,
+        "https://r.jina.ai/http://" + url[len("https://"):],
+        "https://r.jina.ai/https://" + url[len("https://"):],
+    ]
+
+    for candidate in candidates:
+        for attempt in range(2):
+            try:
+                async with session.get(
+                    candidate,
+                    timeout=aiohttp.ClientTimeout(total=35),
+                    allow_redirects=True,
+                ) as response:
+                    if response.status == 200:
+                        body = await response.text()
+                        if len(body) > 1000:
+                            return body
+            except (aiohttp.ClientError, asyncio.TimeoutError):
+                if attempt == 0:
+                    await asyncio.sleep(1)
+                continue
+
     return None
 
 

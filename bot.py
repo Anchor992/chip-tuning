@@ -348,11 +348,31 @@ async def periodic_refresh():
 async def main():
     global CATALOG
     CATALOG = load_catalog()
-    await bot.delete_webhook(drop_pending_updates=True)
+
+    # Validate Telegram authorization before polling.
+    try:
+        me = await bot.get_me()
+        log.info("Telegram authorization OK: @%s (id=%s)", me.username, me.id)
+    except Exception:
+        log.exception("Telegram authorization FAILED. Check BOT_TOKEN in Railway.")
+        raise
+
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        log.info("Webhook removed; starting long polling.")
+    except Exception:
+        log.exception("Failed to remove webhook")
+        raise
+
     asyncio.create_task(silent_refresh())
     asyncio.create_task(periodic_refresh())
     log.info("starting bot with %s catalog items", len(CATALOG))
-    await dp.start_polling(bot)
+
+    try:
+        await dp.start_polling(bot)
+    except Exception:
+        log.exception("Polling crashed")
+        raise
 
 
 if __name__ == "__main__":

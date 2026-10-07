@@ -5,86 +5,33 @@ import asyncio
 import json
 import re
 from pathlib import Path
+from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from bs4 import BeautifulSoup
 
 BASE = "https://avt.ru/catalog/item/?id="
 MAX_ID = 15050
+UPTUNS_INDEX = "https://uptuns.ru/proekty/chip-tyuning/"
 DATA_FILE = Path("data/catalog.json")
 SEED_FILE = Path("data/seed.json")
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (compatible; ChipTuningCatalog/2.0)",
+    "User-Agent": "Mozilla/5.0 (compatible; ChipTuningCatalog/2.1)",
     "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
 }
 
-# Longest-first matching keeps multi-word makes intact.
 KNOWN_BRANDS = sorted(
     {
-        "Mercedes-Benz",
-        "Land Rover",
-        "Alfa Romeo",
-        "Aston Martin",
-        "Great Wall",
-        "Geely",
-        "Genesis",
-        "Haval",
-        "Changan",
-        "Chery",
-        "Citroen",
-        "Chevrolet",
-        "Mitsubishi",
-        "Volkswagen",
-        "Rolls-Royce",
-        "Mini",
-        "Lamborghini",
-        "Ferrari",
-        "Porsche",
-        "Peugeot",
-        "Renault",
-        "Skoda",
-        "Subaru",
-        "Suzuki",
-        "Toyota",
-        "Lexus",
-        "Nissan",
-        "Infiniti",
-        "Hyundai",
-        "Kia",
-        "Volvo",
-        "Ford",
-        "Honda",
-        "Mazda",
-        "Opel",
-        "Fiat",
-        "Jeep",
-        "Dodge",
-        "Chrysler",
-        "Bentley",
-        "Jaguar",
-        "Isuzu",
-        "SsangYong",
-        "Lada",
-        "Daewoo",
-        "Seat",
-        "Cupra",
-        "Audi",
-        "BMW",
-        "Cadillac",
-        "GMC",
-        "Tesla",
-        "Exeed",
-        "Omoda",
-        "JAC",
-        "Jetour",
-        "Kaiyi",
-        "Livna",
-        "Moskvich",
-        "Voyah",
-        "Tank",
-        "GAC",
-        "Hongqi",
+        "Mercedes-Benz", "Land Rover", "Alfa Romeo", "Aston Martin", "Great Wall",
+        "Geely", "Genesis", "Haval", "Changan", "Chery", "Citroen", "Chevrolet",
+        "Mitsubishi", "Volkswagen", "Rolls-Royce", "Mini", "Lamborghini", "Ferrari",
+        "Porsche", "Peugeot", "Renault", "Skoda", "Subaru", "Suzuki", "Toyota",
+        "Lexus", "Nissan", "Infiniti", "Hyundai", "Kia", "Volvo", "Ford", "Honda",
+        "Mazda", "Opel", "Fiat", "Jeep", "Dodge", "Chrysler", "Bentley", "Jaguar",
+        "Isuzu", "SsangYong", "Lada", "Daewoo", "Seat", "Cupra", "Audi", "BMW",
+        "Cadillac", "GMC", "Tesla", "Exeed", "Omoda", "JAC", "Jetour", "Kaiyi",
+        "Livna", "Moskvich", "Voyah", "Tank", "GAC", "Hongqi", "Datsun", "BYD",
     },
     key=len,
     reverse=True,
@@ -99,8 +46,7 @@ def brand_split(prefix: str) -> tuple[str, str]:
     prefix = norm(prefix)
     for brand in KNOWN_BRANDS:
         if prefix.lower().startswith(brand.lower()):
-            rest = prefix[len(brand):].strip(" -–—")
-            # AVT sometimes repeats the make: "Mazda Mazda 3".
+            rest = prefix[len(brand):].strip(" -–—:")
             if rest.lower().startswith(brand.lower() + " "):
                 rest = rest[len(brand):].strip()
             return brand, rest
@@ -108,10 +54,23 @@ def brand_split(prefix: str) -> tuple[str, str]:
     return (parts[0] if parts else "Неизвестно", " ".join(parts[1:]))
 
 
-async def fetch_page(
-    session: aiohttp.ClientSession, sem: asyncio.Semaphore, item_id: int
-) -> tuple[int, str] | None:
-    url = f"{BASE}{item_id}"
+def normalize_year(text: str) -> str:
+    value = norm(text).strip("()")
+    value = value.replace(" - ", "–").replace(" — ", "–").replace("-", "–")
+    value = re.sub(r"\s*–\s*", "–", value)
+    return value
+
+
+def displacement(text: str) -> str | None:
+    match = re.search(r"(?<!\d)(\d[.,]\d)(?!\d)", text or "")
+    return match.group(1).replace(",", ".") if match else None
+
+
+async def fetch_url(
+    session: aiohttp.ClientSession,
+    sem: asyncio.Semaphore,
+    url: str,
+) -> str | None:
     for attempt in range(3):
         try:
             async with sem:
@@ -122,7 +81,7 @@ async def fetch_page(
                 ) as response:
                     if response.status != 200:
                         return None
-                    return item_id, await response.text(errors="ignore")
+                    return await response.text(errors="ignore")
         except Exception:
             if attempt == 2:
                 return None
@@ -130,7 +89,7 @@ async def fetch_page(
     return None
 
 
-def parse_page(item_id: int, html: str) -> dict | None:
+def parse_avt_page(item_id: int, html: str) -> dict | None:
     soup = BeautifulSoup(html, "lxml")
     text = norm(" ".join(soup.stripped_strings))
 
@@ -141,7 +100,6 @@ def parse_page(item_id: int, html: str) -> dict | None:
     if "Стоимость работ" not in text:
         return None
 
-    # Vehicle title lives immediately after the breadcrumb.
     title_match = re.search(
         r"Главная\s+Чип-тюнинг(?: авто)?\s+(.+?)\s+(\d{2,4})\s*hp\b",
         text,
@@ -157,10 +115,8 @@ def parse_page(item_id: int, html: str) -> dict | None:
         return None
 
     prefix = norm(title_match.group(1))
-    title_stock_hp = int(title_match.group(2))
+    stock_hp = int(title_match.group(2))
 
-    # Example: "Audi A3 8Y - 2020 -> 2024 1.4 TFSI"
-    # and "Mazda Mazda 3 2013 -> ... 2.0 i".
     yr = re.search(
         r"^(?P<vehicle>.+?)\s+(?P<y1>\d{4})\s*(?:->|–>|—>)\s*"
         r"(?P<y2>\d{4}|\.\.\.)\s+(?P<engine>.+)$",
@@ -173,18 +129,14 @@ def parse_page(item_id: int, html: str) -> dict | None:
     brand, model = brand_split(yr.group("vehicle"))
     model = norm(model)
     engine = norm(yr.group("engine"))
-
-    # Keep the source's year range intact.
     year = f"{yr.group('y1')}–{yr.group('y2')}"
 
-    # Exact Stage 1 numbers from AVT's own page.
     power_section = text[text.find("Мощность двигателя"):text.find("Крутящий момент")]
     hpvals = [int(x) for x in re.findall(r"(\d+)\s*л\.с\.", power_section)]
     if len(hpvals) < 2:
         return None
-    stock_hp = title_stock_hp
     stage1_hp = hpvals[-1]
-    if stage1_hp == stock_hp:
+    if stage1_hp <= stock_hp:
         return None
 
     torque_start = text.find("Крутящий момент")
@@ -192,8 +144,7 @@ def parse_page(item_id: int, html: str) -> dict | None:
     nmvals = [int(x) for x in re.findall(r"(\d+)\s*Нм", torque_section)]
     if len(nmvals) < 2:
         return None
-    stock_nm = nmvals[-2]
-    stage1_nm = nmvals[-1]
+    stock_nm, stage1_nm = nmvals[-2], nmvals[-1]
     if stage1_nm <= stock_nm:
         return None
 
@@ -206,24 +157,117 @@ def parse_page(item_id: int, html: str) -> dict | None:
         "model": model,
         "year": year,
         "engine": engine,
-        "fuel": "Дизель" if re.search(r"\b(d|td|tdi|dci|hdi|diesel|cdti|crdi)\b", engine, re.I) else "Бензин",
+        "fuel": "Дизель" if re.search(
+            r"\b(d|td|tdi|dci|hdi|diesel|cdti|crdi)\b", engine, re.I
+        ) else "Бензин",
         "stock_hp": stock_hp,
         "stage1_hp": stage1_hp,
         "stock_nm": stock_nm,
         "stage1_nm": stage1_nm,
         "price_rub": price,
+        "source": "AVT",
         "source_url": f"{BASE}{item_id}",
         "image_url": None,
         "graph_url": None,
     }
 
 
-async def crawl(max_id: int, concurrency: int) -> list[dict]:
-    connector = aiohttp.TCPConnector(
-        limit=concurrency,
-        limit_per_host=concurrency,
-        ssl=False,
-    )
+def parse_uptuns_segment(segment: str, source_url: str) -> dict | None:
+    if "Поколение" not in segment or "Мощность двигателя" not in segment:
+        return None
+
+    generation = segment.split("Поколение", 1)[1].split("Тип работ", 1)[0].strip()
+    if not generation:
+        return None
+
+    title = segment.split("Поколение", 1)[0].strip(" |")
+    brand_pos = None
+    matched_brand = None
+    lower = title.lower()
+    for brand in KNOWN_BRANDS:
+        pos = lower.find(brand.lower())
+        if pos >= 0 and (brand_pos is None or pos < brand_pos):
+            brand_pos = pos
+            matched_brand = brand
+    if matched_brand is None:
+        return None
+
+    rest = title[brand_pos + len(matched_brand):].strip(" :–—")
+    if not rest:
+        return None
+    # Some Uptuns cards put the work description after a colon.
+    rest = rest.split(":", 1)[0].strip()
+    if not rest:
+        return None
+
+    engine_type = segment.split("Тип двигателя", 1)[1].split("Объем двигателя", 1)[0].strip()
+    engine_volume = segment.split("Объем двигателя", 1)[1].split("Мощность двигателя", 1)[0].strip()
+    power_text = segment.split("Мощность двигателя", 1)[1].split("Прирост мощности", 1)[0]
+    gain_text = segment.split("Прирост мощности", 1)[1]
+    torque_gain_text = ""
+    if "Прирост крутящего момента" in gain_text:
+        gain_text, torque_gain_text = gain_text.split("Прирост крутящего момента", 1)
+
+    stock_match = re.search(r"(\d{2,4})", power_text)
+    gain_match = re.search(r"\+\s*(\d{1,3})", gain_text)
+    torque_gain_match = re.search(r"\+\s*(\d{1,4})\s*Нм", torque_gain_text)
+
+    if not stock_match or not gain_match:
+        return None
+
+    stock_hp = int(stock_match.group(1))
+    hp_gain = int(gain_match.group(1))
+    if hp_gain <= 0:
+        return None
+
+    torque_gain = int(torque_gain_match.group(1)) if torque_gain_match else None
+
+    return {
+        "id": f"uptuns-{abs(hash((matched_brand, rest, engine_volume, generation))) % 10**12:012d}",
+        "brand": matched_brand,
+        "model": norm(rest),
+        "year": normalize_year(generation),
+        "engine": norm(engine_volume),
+        "fuel": "Дизель" if "дизель" in engine_type.lower() else "Бензин",
+        "stock_hp": stock_hp,
+        "stage1_hp": stock_hp + hp_gain,
+        "stock_nm": None,
+        "stage1_nm": None,
+        "torque_gain_nm": torque_gain,
+        "price_rub": None,
+        "source": "UPTUNS",
+        "source_url": source_url,
+        "image_url": None,
+        "graph_url": None,
+    }
+
+
+def parse_uptuns_page(html: str, source_url: str) -> list[dict]:
+    soup = BeautifulSoup(html, "lxml")
+    text = norm(" ".join(soup.stripped_strings))
+    parts = [part.strip() for part in text.split("Подробнее") if "Поколение" in part]
+    items: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for part in parts:
+        item = parse_uptuns_segment(part, source_url)
+        if not item:
+            continue
+        key = (
+            item["brand"].lower(),
+            item["model"].lower(),
+            item["engine"].lower(),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append(item)
+
+    return items
+
+
+async def crawl_avt(max_id: int, concurrency: int) -> list[dict]:
+    connector = aiohttp.TCPConnector(limit=concurrency, limit_per_host=concurrency, ssl=False)
     sem = asyncio.Semaphore(concurrency)
 
     async with aiohttp.ClientSession(headers=HEADERS, connector=connector) as session:
@@ -232,13 +276,12 @@ async def crawl(max_id: int, concurrency: int) -> list[dict]:
         for start in range(0, len(ids), concurrency * 20):
             batch = ids[start:start + concurrency * 20]
             pages = await asyncio.gather(
-                *(fetch_page(session, sem, item_id) for item_id in batch)
+                *(fetch_url(session, f"{BASE}{item_id}", sem) for item_id in batch)
             )
-            for page in pages:
-                if not page:
+            for item_id, html in zip(batch, pages):
+                if not html:
                     continue
-                item_id, html = page
-                parsed = parse_page(item_id, html)
+                parsed = parse_avt_page(item_id, html)
                 if parsed:
                     results.append(parsed)
             print(
@@ -249,13 +292,90 @@ async def crawl(max_id: int, concurrency: int) -> list[dict]:
         return results
 
 
-def write_catalog(items: list[dict]) -> None:
+async def crawl_uptuns(concurrency: int) -> list[dict]:
+    sem = asyncio.Semaphore(max(4, min(concurrency, 12)))
+    connector = aiohttp.TCPConnector(limit=12, limit_per_host=12, ssl=False)
+
+    async with aiohttp.ClientSession(headers=HEADERS, connector=connector) as session:
+        index_html = await fetch_url(session, UPTUNS_INDEX, sem)
+        if not index_html:
+            print("UPTUNS unavailable; keeping AVT-only catalog.", flush=True)
+            return []
+
+        soup = BeautifulSoup(index_html, "lxml")
+        links = {UPTUNS_INDEX}
+        for anchor in soup.find_all("a", href=True):
+            url = urljoin(UPTUNS_INDEX, anchor["href"])
+            parsed = urlparse(url)
+            if parsed.netloc not in {"uptuns.ru", "www.uptuns.ru"}:
+                continue
+            if parsed.path.startswith("/proekty/chip-tyuning"):
+                links.add(url.split("#", 1)[0])
+
+        # The public section is small; cap discovery so a site navigation glitch
+        # cannot turn the catalog build into a full-site crawl.
+        urls = sorted(links)[:80]
+        print(f"UPTUNS discovered {len(urls)} project pages/sections", flush=True)
+
+        pages = await asyncio.gather(*(fetch_url(session, url, sem) for url in urls))
+        results: list[dict] = []
+        seen: set[tuple[str, str, str]] = set()
+
+        for url, html in zip(urls, pages):
+            if not html:
+                continue
+            for item in parse_uptuns_page(html, url):
+                key = (
+                    item["brand"].lower(),
+                    item["model"].lower(),
+                    item["engine"].lower(),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                results.append(item)
+
+        print(f"UPTUNS parsed {len(results)} project entries", flush=True)
+        return results
+
+
+def normalized(value: str) -> str:
+    value = value.lower().replace("-", " ")
+    return re.sub(r"[^a-zа-я0-9]+", " ", value).strip()
+
+
+def has_avt_equivalent(item: dict, avt_items: list[dict]) -> bool:
+    brand = normalized(str(item.get("brand", "")))
+    model = normalized(str(item.get("model", "")))
+    disp = displacement(str(item.get("engine", "")))
+
+    for avt in avt_items:
+        if normalized(str(avt.get("brand", ""))) != brand:
+            continue
+        avt_model = normalized(str(avt.get("model", "")))
+        if model != avt_model and model not in avt_model and avt_model not in model:
+            continue
+        if disp:
+            avt_disp = displacement(str(avt.get("engine", "")))
+            if avt_disp and avt_disp != disp:
+                continue
+        return True
+    return False
+
+
+def write_catalog(avt_items: list[dict], uptuns_items: list[dict]) -> None:
     seed = json.loads(SEED_FILE.read_text(encoding="utf-8")) if SEED_FILE.exists() else []
 
-    # Prefer freshly parsed AVT values. Seed remains only as a safety net.
+    # AVT is the primary source. UPTUNS supplements only gaps where AVT does
+    # not have the same make/model/displacement, preventing duplicate conflicts.
     merged = {str(x["id"]): x for x in seed}
-    for item in items:
+
+    for item in avt_items:
         merged[str(item["id"])] = item
+
+    for item in uptuns_items:
+        if not has_avt_equivalent(item, avt_items):
+            merged[str(item["id"])] = item
 
     data = sorted(
         merged.values(),
@@ -267,17 +387,20 @@ def write_catalog(items: list[dict]) -> None:
     )
 
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    DATA_FILE.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
     brands = len({x.get("brand") for x in data})
     models = len({(x.get("brand"), x.get("model")) for x in data})
-    print(f"catalog={len(data)} entries, brands={brands}, models={models}", flush=True)
+    avt_count = sum(1 for x in data if x.get("source") == "AVT")
+    uptuns_count = sum(1 for x in data if x.get("source") == "UPTUNS")
+    print(
+        f"catalog={len(data)} entries, brands={brands}, models={models}, "
+        f"AVT={avt_count}, UPTUNS={uptuns_count}",
+        flush=True,
+    )
 
     if len(data) < 1000 or brands < 20:
-        raise SystemExit("AVT catalog unexpectedly small; refusing to publish.")
+        raise SystemExit("Verified catalog unexpectedly small; refusing to publish.")
 
 
 def main() -> None:
@@ -286,8 +409,9 @@ def main() -> None:
     parser.add_argument("--concurrency", type=int, default=24)
     args = parser.parse_args()
 
-    items = asyncio.run(crawl(args.max_id, args.concurrency))
-    write_catalog(items)
+    avt_items = asyncio.run(crawl_avt(args.max_id, args.concurrency))
+    uptuns_items = asyncio.run(crawl_uptuns(args.concurrency))
+    write_catalog(avt_items, uptuns_items)
 
 
 if __name__ == "__main__":

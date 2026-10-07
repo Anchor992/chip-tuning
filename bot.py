@@ -159,7 +159,7 @@ def engines_keyboard(items: list[dict], brand: str, model_key: str, page: int = 
         rows.append([
             InlineKeyboardButton(
                 text=label[:55],
-                callback_data=f"car:{item['id']}",
+                callback_data=f"carid:{safe_id(str(item['id']))}",
             )
         ])
 
@@ -460,10 +460,11 @@ async def choose_model(call: CallbackQuery) -> None:
     )
 
 
-@router.callback_query(F.data.startswith("car:"))
+@router.callback_query(F.data.startswith("carid:"))
 async def choose_car(call: CallbackQuery) -> None:
     await call.answer()
-    item = find_item(call.data.split(":", 1)[1])
+    key = call.data.split(":", 1)[1]
+    item = next((x for x in CATALOG if safe_id(str(x.get("id", ""))) == key), None)
     if not item:
         await call.message.answer("Карточка не найдена.")
         return

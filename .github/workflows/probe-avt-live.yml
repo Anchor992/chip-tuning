@@ -1,0 +1,26 @@
+name: Probe AVT live access
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/probe-avt-live.yml"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe AVT
+        run: |
+          python - <<'PY'
+          import requests
+          for url in [
+              "https://avt.ru/",
+              "https://avt.ru/catalog/item/?id=13791",
+              "https://avt.ru/catalog/item/?id=9430",
+          ]:
+              r=requests.get(url,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
+              print(url, r.status_code, len(r.content), r.url)
+              print(r.text[:300].replace("\n"," "))
+          PY

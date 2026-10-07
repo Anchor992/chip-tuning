@@ -223,7 +223,7 @@ def parse_uptuns_segment(segment: str, source_url: str) -> dict | None:
     torque_gain = int(torque_gain_match.group(1)) if torque_gain_match else None
 
     return {
-        "id": f"uptuns-{abs(hash((matched_brand, rest, engine_volume, generation))) % 10**12:012d}",
+        "id": f"uptuns-{__import__("hashlib").sha1("|".join([matched_brand, rest, engine_volume, generation]).encode("utf-8")).hexdigest()[:12]}",
         "brand": matched_brand,
         "model": norm(rest),
         "year": normalize_year(generation),
@@ -276,7 +276,7 @@ async def crawl_avt(max_id: int, concurrency: int) -> list[dict]:
         for start in range(0, len(ids), concurrency * 20):
             batch = ids[start:start + concurrency * 20]
             pages = await asyncio.gather(
-                *(fetch_url(session, f"{BASE}{item_id}", sem) for item_id in batch)
+                *(fetch_url(session, sem, f"{BASE}{item_id}") for item_id in batch)
             )
             for item_id, html in zip(batch, pages):
                 if not html:
@@ -293,11 +293,11 @@ async def crawl_avt(max_id: int, concurrency: int) -> list[dict]:
 
 
 async def crawl_uptuns(concurrency: int) -> list[dict]:
-    sem = asyncio.Semaphore(max(4, min(concurrency, 12)))
+    sem = asyncio.Semaphore(max(4, min(concurrency, 8)))
     connector = aiohttp.TCPConnector(limit=12, limit_per_host=12, ssl=False)
 
     async with aiohttp.ClientSession(headers=HEADERS, connector=connector) as session:
-        index_html = await fetch_url(session, UPTUNS_INDEX, sem)
+        index_html = await fetch_url(session, sem, UPTUNS_INDEX)
         if not index_html:
             print("UPTUNS unavailable; keeping AVT-only catalog.", flush=True)
             return []
@@ -317,7 +317,7 @@ async def crawl_uptuns(concurrency: int) -> list[dict]:
         urls = sorted(links)[:80]
         print(f"UPTUNS discovered {len(urls)} project pages/sections", flush=True)
 
-        pages = await asyncio.gather(*(fetch_url(session, url, sem) for url in urls))
+        pages = await asyncio.gather(*(fetch_url(session, sem, url) for url in urls))
         results: list[dict] = []
         seen: set[tuple[str, str, str]] = set()
 

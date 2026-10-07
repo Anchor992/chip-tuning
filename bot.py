@@ -103,10 +103,14 @@ def brands_keyboard() -> InlineKeyboardMarkup:
 
 
 def models_keyboard(brand: str, page: int = 0) -> InlineKeyboardMarkup:
-    models = sorted(
-        {display_model_name(item) for item in CATALOG if str(item["brand"]) == brand},
-        key=str.lower,
-    )
+    grouped: dict[str, dict] = {}
+    for item in CATALOG:
+        if str(item["brand"]) != brand:
+            continue
+        model = display_model_name(item)
+        grouped.setdefault(model, item)
+
+    models = sorted(grouped.items(), key=lambda x: x[0].lower())
     page_size = 20
     total_pages = max(1, (len(models) + page_size - 1) // page_size)
     page = max(0, min(page, total_pages - 1))
@@ -116,10 +120,10 @@ def models_keyboard(brand: str, page: int = 0) -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(
                 text=model[:45],
-                callback_data=f"model:{safe_id(brand + '|' + model)}",
+                callback_data=f"modelid:{safe_id(str(item['id']))}",
             )
         ]
-        for model in current
+        for model, item in current
     ]
 
     nav = []
@@ -330,12 +334,10 @@ def find_brand_by_hash(value: str) -> str | None:
     return None
 
 
-def find_model_by_hash(value: str) -> tuple[str, str] | None:
+def find_model_by_id_hash(value: str) -> tuple[str, str] | None:
     for item in CATALOG:
-        brand = str(item["brand"])
-        model = display_model_name(item)
-        if safe_id(brand + "|" + model) == value:
-            return brand, model
+        if safe_id(str(item.get("id", ""))) == value:
+            return str(item["brand"]), display_model_name(item)
     return None
 
 
@@ -422,7 +424,7 @@ async def models_back(call: CallbackQuery) -> None:
 async def engines_page(call: CallbackQuery) -> None:
     await call.answer()
     _, model_hash, page_text = call.data.split(":", 2)
-    pair = find_model_by_hash(model_hash)
+    pair = find_model_by_id_hash(model_hash)
     if not pair:
         await call.message.answer("Модель не найдена.")
         return
@@ -437,10 +439,11 @@ async def engines_page(call: CallbackQuery) -> None:
     )
 
 
-@router.callback_query(F.data.startswith("model:"))
+@router.callback_query(F.data.startswith("modelid:"))
 async def choose_model(call: CallbackQuery) -> None:
     await call.answer()
-    pair = find_model_by_hash(call.data.split(":", 1)[1])
+    model_id_hash = call.data.split(":", 1)[1]
+    pair = find_model_by_id_hash(model_id_hash)
     if not pair:
         await call.message.answer("Модель не найдена. Откройте каталог заново.")
         return
@@ -453,7 +456,7 @@ async def choose_model(call: CallbackQuery) -> None:
 
     await call.message.edit_text(
         f"🚗 <b>{brand} {model}</b>\n\nВыберите двигатель:",
-        reply_markup=engines_keyboard(items, brand, call.data.split(":", 1)[1], 0),
+        reply_markup=engines_keyboard(items, brand, model_id_hash, 0),
     )
 
 

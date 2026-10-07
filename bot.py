@@ -75,18 +75,9 @@ def safe_id(value: str) -> str:
 
 
 def display_model_name(item: dict) -> str:
-    model = " ".join(str(item.get("model", "")).split()).strip()
-    if not model:
-        return "Неизвестная модель"
-    model = re.sub(
-        r"\s+\d+(?:[\s.,]+\d+)(?:\s*(?:tsi|tfsi|tdi|fsi|tfs|mpi|gdi|thp|vti|jts|tbi|cdti|crdi|dci|hdi|d4d|d5|turbo|bi[- ]?turbo|biturbo|ps|hp|kw|i|t|d|l))?.*$",
-        "",
-        model,
-        flags=re.I,
-    )
-    model = re.sub(r"\s+\d+(?:ps|hp|kw)\b.*$", "", model, flags=re.I)
-    return model.strip(" -_/") or "Неизвестная модель"
-
+    # AVT already stores clean model names; do not strip generation numbers
+    # such as "A3 8Y" or "911 996".
+    return " ".join(str(item.get("model", "")).split()).strip() or "Неизвестная модель"
 
 def brands_keyboard() -> InlineKeyboardMarkup:
     brands = sorted({str(item["brand"]) for item in CATALOG}, key=str.lower)

@@ -21,6 +21,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
 )
 from PIL import Image, ImageDraw, ImageFont
+import re
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("chip-tuning")
@@ -73,6 +74,20 @@ def safe_id(value: str) -> str:
     return hashlib.sha1(value.encode("utf-8")).hexdigest()[:12]
 
 
+def display_model_name(item: dict) -> str:
+    model = " ".join(str(item.get("model", "")).split()).strip()
+    if not model:
+        return "Неизвестная модель"
+    model = re.sub(
+        r"\s+\d+(?:[\s.,]+\d+)(?:\s*(?:tsi|tfsi|tdi|fsi|tfs|mpi|gdi|thp|vti|jts|tbi|cdti|crdi|dci|hdi|d4d|d5|turbo|bi[- ]?turbo|biturbo|ps|hp|kw|i|t|d|l))?.*$",
+        "",
+        model,
+        flags=re.I,
+    )
+    model = re.sub(r"\s+\d+(?:ps|hp|kw)\b.*$", "", model, flags=re.I)
+    return model.strip(" -_/") or "Неизвестная модель"
+
+
 def brands_keyboard() -> InlineKeyboardMarkup:
     brands = sorted({str(item["brand"]) for item in CATALOG}, key=str.lower)
     rows = []
@@ -89,7 +104,7 @@ def brands_keyboard() -> InlineKeyboardMarkup:
 
 def models_keyboard(brand: str, page: int = 0) -> InlineKeyboardMarkup:
     models = sorted(
-        {str(item["model"]) for item in CATALOG if str(item["brand"]) == brand},
+        {display_model_name(item) for item in CATALOG if str(item["brand"]) == brand},
         key=str.lower,
     )
     page_size = 20
@@ -318,7 +333,7 @@ def find_brand_by_hash(value: str) -> str | None:
 def find_model_by_hash(value: str) -> tuple[str, str] | None:
     for item in CATALOG:
         brand = str(item["brand"])
-        model = str(item["model"])
+        model = display_model_name(item)
         if safe_id(brand + "|" + model) == value:
             return brand, model
     return None
@@ -414,7 +429,7 @@ async def engines_page(call: CallbackQuery) -> None:
     brand, model = pair
     items = [
         item for item in CATALOG
-        if str(item["brand"]) == brand and str(item["model"]) == model
+        if str(item["brand"]) == brand and display_model_name(item) == model
     ]
     await call.message.edit_text(
         f"🚗 <b>{brand} {model}</b>\n\nВыберите двигатель:",
@@ -454,7 +469,7 @@ async def choose_car(call: CallbackQuery) -> None:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🌐 Открыть источник AVT",
+                    text="🌐 Открыть источник",
                     url=item["source_url"],
                 )
             ]

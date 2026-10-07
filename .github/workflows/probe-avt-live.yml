@@ -15,12 +15,18 @@ jobs:
         run: |
           python - <<'PY'
           import requests
+          from bs4 import BeautifulSoup
           for url in [
-              "https://avt.ru/",
               "https://avt.ru/catalog/item/?id=13791",
               "https://avt.ru/catalog/item/?id=9430",
           ]:
               r=requests.get(url,headers={"User-Agent":"Mozilla/5.0"},timeout=30)
-              print(url, r.status_code, len(r.content), r.url)
-                            from bs4 import BeautifulSoup              soup=BeautifulSoup(r.text,"html.parser")              print("TITLE:", soup.title.get_text(" ",strip=True) if soup.title else "")              print("H1:", [(h.get_text(" ",strip=True)) for h in soup.find_all(["h1","h2"])][:8])              txt=" ".join(soup.stripped_strings)              for key in ["Чип-тюнинг","Мощность двигателя","Стоимость работ","Другие модификации двигателя"]:                  i=txt.find(key)                  print(key, txt[i:i+500] if i>=0 else "NOT FOUND")
+              print(url, r.status_code, len(r.content))
+              soup=BeautifulSoup(r.text,"html.parser")
+              print("TITLE:", soup.title.get_text(" ",strip=True) if soup.title else "")
+              print("H:", [h.get_text(" ",strip=True) for h in soup.find_all(["h1","h2"])][:5])
+              txt=" ".join(soup.stripped_strings)
+              for key in ["Чип-тюнинг","Мощность двигателя","Стоимость работ","Другие модификации двигателя"]:
+                  i=txt.find(key)
+                  print(key, txt[i:i+500] if i>=0 else "NOT FOUND")
           PY

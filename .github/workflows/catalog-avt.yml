@@ -32,13 +32,35 @@ jobs:
         run: python scripts/build_avt_catalog.py --max-id 15050 --concurrency 24
 
       - name: Commit catalog
+        shell: bash
         run: |
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Keep the freshly generated catalog, then fast-forward our local checkout
+          # to the newest remote main so concurrent commits cannot make the push fail.
+          cp data/catalog.json /tmp/catalog.json
+          git fetch origin main
+          git reset --hard origin/main
+          cp /tmp/catalog.json data/catalog.json
+
           git add -f data/catalog.json
           if git diff --cached --quiet; then
             echo "No catalog changes."
             exit 0
           fi
+
           git commit -m "Build verified catalog from AVT"
-          git push
+
+          # Retry once in case another commit lands between fetch and push.
+          if ! git push origin HEAD:main; then
+            cp data/catalog.json /tmp/catalog.json
+            git fetch origin main
+            git reset --hard origin/main
+            cp /tmp/catalog.json data/catalog.json
+            git add -f data/catalog.json
+            git commit -m "Build verified catalog from AVT"
+            git push origin HEAD:main
+          fi

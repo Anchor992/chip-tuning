@@ -195,6 +195,8 @@ def car_caption(item: dict) -> str:
             f'{item["stock_nm"]} → {item["stage1_nm"]} Нм '
             f'(<b>+{nm_gain} Нм</b>)'
         )
+    elif item.get("torque_gain_nm") is not None:
+        torque = f'<b>Прирост: +{int(item["torque_gain_nm"])} Нм</b> (исходный момент не указан источником)'
 
     return (
         f'🚗 <b>{item["brand"]} {item["model"]}</b>\n'
@@ -545,7 +547,7 @@ async def text_search(message: Message) -> None:
         rows.append([
             InlineKeyboardButton(
                 text=label[:55],
-                callback_data=f'car:{item["id"]}',
+                callback_data=f'carid:{safe_id(str(item["id"]))}',
             )
         ])
 

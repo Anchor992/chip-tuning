@@ -448,7 +448,7 @@ async def choose_model(call: CallbackQuery) -> None:
     brand, model = pair
     items = [
         item for item in CATALOG
-        if str(item["brand"]) == brand and str(item["model"]) == model
+        if str(item["brand"]) == brand and display_model_name(item) == model
     ]
 
     await call.message.edit_text(

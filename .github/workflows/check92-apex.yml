@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   preview:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +29,9 @@ jobs:
           python cinematic-preview/apex-build.py
           NODE_PATH="$PWD/cinematic-preview/.build/node_modules" cinematic-preview/.build/node_modules/.bin/esbuild cinematic-preview/apex-source.js --bundle --minify --format=esm --target=safari15 --outfile=cinematic-preview/apex.bundle.js
           node --check cinematic-preview/apex.bundle.js
+          mkdir -p cinematic-preview/apex-proof/site
+          cp cinematic-preview/{index.html,apex.html,apex.css,apex.bundle.js,studio.js,film.js} cinematic-preview/apex-proof/site/
+          cp -R cinematic-preview/assets cinematic-preview/apex-proof/site/
       - name: Install test browser
         run: node cinematic-preview/.build/node_modules/playwright/cli.js install --with-deps chromium
       - name: Exercise all scenes and preserved features

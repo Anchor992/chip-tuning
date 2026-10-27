@@ -1,0 +1,817 @@
+{
+  "testedAt": "2026-10-27T18:57:09.193Z",
+  "browser": "Chromium with software WebGL; not a physical iPhone test",
+  "screens": [
+    {
+      "tag": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "states": [
+        {
+          "id": "drive",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "hero",
+              "progress": 0.11048678021183357,
+              "frames": 9,
+              "car": "ready",
+              "engine": "pending",
+              "camera": [
+                7.590179906589005,
+                2.121535458233017,
+                5.713070014065339
+              ],
+              "reduced": false,
+              "triangles": 142406,
+              "calls": 115,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "hero",
+              "progress": 0.4519313448813144,
+              "frames": 12,
+              "car": "ready",
+              "engine": "pending",
+              "camera": [
+                5.686714884238025,
+                2.497124479369446,
+                7.609945717637262
+              ],
+              "reduced": false,
+              "triangles": 142406,
+              "calls": 115,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "hero",
+              "progress": 0.5499671673622237,
+              "frames": 30,
+              "car": "ready",
+              "engine": "pending",
+              "camera": [
+                4.853416804336703,
+                2.604963884098446,
+                8.166660598027942
+              ],
+              "reduced": false,
+              "triangles": 142406,
+              "calls": 115,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "circuit",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "circuit",
+              "progress": 0.15029239766081873,
+              "frames": 31,
+              "car": "ready",
+              "engine": "loading",
+              "camera": [
+                5.928038066956186,
+                4.486294070007368,
+                6.53918410018345
+              ],
+              "reduced": false,
+              "triangles": 4022,
+              "calls": 8,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "circuit",
+              "progress": 0.15029239766081873,
+              "frames": 31,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                5.928038066956186,
+                4.486294070007368,
+                6.53918410018345
+              ],
+              "reduced": false,
+              "triangles": 4022,
+              "calls": 8,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "circuit",
+              "progress": 0.7587559225463372,
+              "frames": 54,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                0.528310258939748,
+                1.5376972858308147,
+                0.4411841525474433
+              ],
+              "reduced": false,
+              "triangles": 4022,
+              "calls": 8,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "about",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "intro",
+              "progress": 0.15024305555555556,
+              "frames": 55,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.718107764928026,
+                4.245604868155735,
+                6.857625540871546
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "intro",
+              "progress": 0.15024305555555556,
+              "frames": 55,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.718107764928026,
+                4.245604868155735,
+                6.857625540871546
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "intro",
+              "progress": 0.550129394613285,
+              "frames": 74,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                7.946286647967337,
+                4.8851496010871625,
+                5.386699222003769
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "services",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "services",
+              "progress": 0.1501215277777778,
+              "frames": 75,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.717691056529408,
+                4.24519677365668,
+                6.858033746565031
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "services",
+              "progress": 0.1501215277777778,
+              "frames": 75,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.717691056529408,
+                4.24519677365668,
+                6.858033746565031
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "services",
+              "progress": 0.5499343198661555,
+              "frames": 93,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                7.945761205675218,
+                4.885264717950068,
+                5.387474256308488
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "response",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "response",
+              "progress": 0.14979166666666666,
+              "frames": 94,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                10.463119608941003,
+                2.3,
+                1.697977635010035
+              ],
+              "reduced": false,
+              "triangles": 140742,
+              "calls": 113,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "response",
+              "progress": 0.30717940278161326,
+              "frames": 95,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                10.549217730672968,
+                2.3,
+                1.0363422556545057
+              ],
+              "reduced": false,
+              "triangles": 140742,
+              "calls": 113,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "response",
+              "progress": 0.5470964878670325,
+              "frames": 104,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                10.599979686626495,
+                2.3,
+                0.02075194221363867
+              ],
+              "reduced": false,
+              "triangles": 140742,
+              "calls": 113,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "process",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "process",
+              "progress": 0.15015914351851853,
+              "frames": 105,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.717820040350956,
+                4.245323097115583,
+                6.857907399889493
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "process",
+              "progress": 0.15015914351851853,
+              "frames": 105,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.717820040350956,
+                4.245323097115583,
+                6.857907399889493
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "process",
+              "progress": 0.5497940257970733,
+              "frames": 124,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                7.9453832707837995,
+                4.885347232624246,
+                5.388031614638961
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "velocity",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "velocity",
+              "progress": 0.15009548611111112,
+              "frames": 125,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                -2.0686162697989334,
+                2.0452675453510225,
+                -8.861762055501329
+              ],
+              "reduced": false,
+              "triangles": 143262,
+              "calls": 129,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "velocity",
+              "progress": 0.21127699243537099,
+              "frames": 126,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                -1.5996972902660058,
+                2.150446831831908,
+                -8.958290494258131
+              ],
+              "reduced": false,
+              "triangles": 143262,
+              "calls": 129,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "velocity",
+              "progress": 0.549908278199489,
+              "frames": 144,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                1.039799299860047,
+                2.392026694775253,
+                -9.040399184549903
+              ],
+              "reduced": false,
+              "triangles": 142886,
+              "calls": 130,
+              "overflow": false
+            }
+          ]
+        }
+      ],
+      "forms": "selection and Telegram handoff passed; no message sent",
+      "errors": [],
+      "failed": []
+    },
+    {
+      "tag": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "states": [
+        {
+          "id": "drive",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "hero",
+              "progress": 0.12999959311063658,
+              "frames": 11,
+              "car": "ready",
+              "engine": "pending",
+              "camera": [
+                10.078385647445804,
+                2.1429995524217,
+                7.72762206253375
+              ],
+              "reduced": false,
+              "triangles": 138388,
+              "calls": 112,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "hero",
+              "progress": 0.39572460374725466,
+              "frames": 13,
+              "car": "ready",
+              "engine": "pending",
+              "camera": [
+                8.19112575034456,
+                2.43529706412198,
+                9.705434505576877
+              ],
+              "reduced": false,
+              "triangles": 140965,
+              "calls": 114,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "hero",
+              "progress": 0.5502979206793653,
+              "frames": 29,
+              "car": "ready",
+              "engine": "pending",
+              "camera": [
+                6.4843908468787435,
+                2.605327712747302,
+                10.919829455853014
+              ],
+              "reduced": false,
+              "triangles": 142406,
+              "calls": 115,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "circuit",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "circuit",
+              "progress": 0.14988894950124687,
+              "frames": 30,
+              "car": "ready",
+              "engine": "loading",
+              "camera": [
+                6.99909364889629,
+                5.2999777406652395,
+                7.722809146934032
+              ],
+              "reduced": false,
+              "triangles": 4022,
+              "calls": 8,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "circuit",
+              "progress": 0.14988894950124687,
+              "frames": 30,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                6.99909364889629,
+                5.2999777406652395,
+                7.722809146934032
+              ],
+              "reduced": false,
+              "triangles": 4022,
+              "calls": 8,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "circuit",
+              "progress": 0.7772933728977277,
+              "frames": 49,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                0.33011073736559393,
+                1.8993670288919766,
+                0.1583928045502472
+              ],
+              "reduced": false,
+              "triangles": 4022,
+              "calls": 8,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "about",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "intro",
+              "progress": 0.1505109597156398,
+              "frames": 50,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                8.748732158670036,
+                4.246504218641934,
+                8.928028092241462
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "intro",
+              "progress": 0.4253772254628579,
+              "frames": 53,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                9.889387610263096,
+                4.867175069188533,
+                7.645260799604861
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "intro",
+              "progress": 0.6798268927961819,
+              "frames": 71,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                10.779505110330105,
+                4.713543040672084,
+                6.328686244108421
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "services",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "services",
+              "progress": 0.14990002962085308,
+              "frames": 72,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                8.74600455002086,
+                4.244452770775482,
+                8.930700107551166
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "services",
+              "progress": 0.3072411461457183,
+              "frames": 73,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                9.420812412919334,
+                4.686613460754655,
+                8.215734506456801
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "services",
+              "progress": 0.6794587362472435,
+              "frames": 90,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                10.778339954062465,
+                4.714285408565942,
+                6.330670409574387
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "response",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "response",
+              "progress": 0.15010367298578198,
+              "frames": 91,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                14.016915701778974,
+                2.3,
+                2.2728999558322123
+              ],
+              "reduced": false,
+              "triangles": 140708,
+              "calls": 112,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "response",
+              "progress": 0.15010367298578198,
+              "frames": 91,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                14.016915701778974,
+                2.3,
+                2.2728999558322123
+              ],
+              "reduced": false,
+              "triangles": 140708,
+              "calls": 112,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "response",
+              "progress": 0.675936251689592,
+              "frames": 101,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                14.182551807593777,
+                2.3,
+                -0.7037216956428495
+              ],
+              "reduced": false,
+              "triangles": 140708,
+              "calls": 112,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "process",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "process",
+              "progress": 0.14966374629812437,
+              "frames": 102,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                8.744949401239491,
+                4.2436588145433625,
+                8.931733312731694
+              ],
+              "reduced": false,
+              "triangles": 60472,
+              "calls": 17,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "process",
+              "progress": 0.30736221831852995,
+              "frames": 103,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                9.421309744071163,
+                4.686873204085191,
+                8.215164192289146
+              ],
+              "reduced": false,
+              "triangles": 60472,
+              "calls": 17,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "process",
+              "progress": 0.7106330676128868,
+              "frames": 120,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                10.875703842109182,
+                4.646721371256396,
+                6.161904408438319
+              ],
+              "reduced": false,
+              "triangles": 60876,
+              "calls": 18,
+              "overflow": false
+            }
+          ]
+        },
+        {
+          "id": "velocity",
+          "shots": [
+            {
+              "version": "0.6",
+              "scene": "velocity",
+              "progress": 0.14977043838862558,
+              "frames": 121,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                -3.1407790251507044,
+                2.0446760684164293,
+                -13.437838632576797
+              ],
+              "reduced": false,
+              "triangles": 143650,
+              "calls": 129,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "velocity",
+              "progress": 0.307344652863898,
+              "frames": 122,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                -1.2965399948394885,
+                2.284535911392461,
+                -13.738958622900851
+              ],
+              "reduced": false,
+              "triangles": 143686,
+              "calls": 132,
+              "overflow": false
+            },
+            {
+              "version": "0.6",
+              "scene": "velocity",
+              "progress": 0.6799213274568672,
+              "frames": 138,
+              "car": "ready",
+              "engine": "ready",
+              "camera": [
+                3.0966891352677646,
+                2.2988992165150184,
+                -13.448067385297957
+              ],
+              "reduced": false,
+              "triangles": 143650,
+              "calls": 129,
+              "overflow": false
+            }
+          ]
+        }
+      ],
+      "forms": "selection and Telegram handoff passed; no message sent",
+      "errors": [],
+      "failed": []
+    }
+  ],
+  "status": "passed",
+  "reducedMotion": "service content remains available",
+  "noWebGL": "fallback and catalog available"
+}

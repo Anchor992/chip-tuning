@@ -12,13 +12,34 @@ nav.top{position:fixed;inset:0 0 auto;z-index:100;height:88px;padding:0 var(--fr
 @media(max-height:700px) and (min-width:851px){.stage-sticky{min-height:600px}.scene-copy,.panel{top:25%}.scene-copy h1,.panel h2{font-size:68px}.scene-copy p,.panel p{font-size:14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition-duration:100ms!important;transition-delay:0ms!important}.motion-ready{opacity:1;transform:none}.scene-copy,.panel{transform:none}.stage{height:220svh}.play:active,.nav-btn:active,.vehicle-cta:active{transform:none}}
 
+
+/* Studio edition: a single subject, four camera shots, no ornamental chrome. */
+.stage{height:450svh}.stage-sticky{background:#080808}.scene-copy,.panel{top:28%;width:48%;transition:opacity 450ms var(--ease-out),transform 850ms var(--ease-out)}
+.scene-copy h1,.panel h2{font-size:clamp(64px,6.7vw,112px);letter-spacing:-.055em;line-height:1.01}.scene-copy h1{width:115%}.title-line{display:block}.scene-copy p,.panel p{max-width:355px;color:#dedede}
+.scene-copy,.panel{transform:translateY(18px)}.hud[data-phase="0"] .scene-copy,.hud[data-phase="1"] .panel-1,.hud[data-phase="2"] .panel-2,.hud[data-phase="3"] .panel-3{transform:none}
+.play{display:flex;align-items:center;justify-content:space-between;min-width:185px}.play span{display:inline-block;transition:transform 200ms var(--ease-out)}.play[aria-pressed="true"]{background:var(--white)}
+.scene-footer{bottom:max(36px,env(safe-area-inset-bottom))}.scroll-label{font-size:12px;max-width:180px;line-height:1.5}.progress-block{font-variant-numeric:tabular-nums}
+.manifesto{position:relative;z-index:3;padding-top:64px;padding-bottom:64px}.intro{padding-top:180px;padding-bottom:180px}.services>h2{max-width:1100px}.service h3{transition:transform 250ms var(--ease-out)}
+.vehicle-active{transition:opacity 180ms var(--ease-out),transform 250ms var(--ease-out)}.vehicle-active.changing{opacity:.25;transform:translateY(8px)}.vehicle-brand{position:relative}.vehicle-brand[aria-pressed="true"]{background:var(--orange);color:var(--ink)}
+.contact{padding-top:180px}.form input,.form textarea{transition:border-color 180ms ease}.form input:focus,.form textarea:focus{border-color:var(--orange)}.site-contact-links a{position:relative}.site-contact-links a::after{content:'';position:absolute;left:0;right:0;bottom:-5px;height:2px;background:var(--orange);transform:scaleX(0);transform-origin:left;transition:transform 250ms var(--ease-out)}
+.reveal.motion-ready{transform:translateY(28px);transition:opacity 700ms var(--ease-out),transform 900ms var(--ease-out)}.reveal.motion-ready.in{transform:none}.word-mask{display:block;overflow:hidden}.word-mask>span{display:block;transform:translateY(108%);transition:transform 1000ms var(--ease-out)}.in .word-mask>span{transform:none}
+@media(hover:hover) and (pointer:fine){.play:hover span{transform:translateX(5px)}.service:hover h3{transform:translateX(8px)}.site-contact-links a:hover::after{transform:scaleX(1)}}
+@media(max-width:1100px){.scene-copy h1,.panel h2{font-size:clamp(56px,6.7vw,80px)}.scene-copy p,.panel p{max-width:320px}}
+@media(max-width:850px){.stage{height:380svh}.scene-copy,.panel{top:18%;width:calc(100% - var(--frame)*2)}.scene-copy h1,.panel h2{width:100%;font-size:clamp(44px,9.2vw,72px);letter-spacing:-.045em}.scene-copy p,.panel p{max-width:360px}.intro{padding:100px var(--frame)}.contact{padding-top:100px}.scene-footer{bottom:max(24px,env(safe-area-inset-bottom))}.play{min-width:135px}.manifesto{padding-top:40px;padding-bottom:40px}}
+@media(max-width:420px){.scene-copy h1,.panel h2{font-size:clamp(40px,9.2vw,46px)}.scene-copy p,.panel p{max-width:310px}.play{min-width:125px}.scene-copy,.panel{top:18%}}
+@media(prefers-reduced-motion:reduce){.stage{height:220svh}.scene-copy,.panel,.reveal.motion-ready,.word-mask>span,.vehicle-active.changing{transform:none}.word-mask>span{transition:none}.vehicle-active.changing{opacity:1}.scene-copy,.panel{transition:opacity 100ms ease}.service:hover h3,.play:hover span{transform:none}}
+
+
+@keyframes studio-title{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.scene-copy .title-line{animation:studio-title 1000ms var(--ease-out) both}.scene-copy .title-line:nth-child(2){animation-delay:70ms}
+@media(max-height:600px) and (max-width:950px){.stage-sticky{min-height:100svh}.scene-copy,.panel{top:25%;width:46%}.scene-copy h1,.panel h2{font-size:34px;margin-bottom:16px}.scene-copy p,.panel p{font-size:12px;line-height:1.5;max-width:300px}.scene-footer{bottom:16px}.play{padding:14px 16px}.scene-copy h1{width:110%}}
 </style></head><body><div id="grain"></div><a class="skip" href="#platform">Перейти к подбору автомобиля</a><nav class="top" aria-label="Основная навигация"><a class="brand" href="#start" aria-label="CHECK92 на главную"><i></i>CHECK<strong>92</strong></a><span class="top-version">Севастополь · Automotive engineering</span><div class="top-links"><a href="#services">Возможности</a><a href="#platform">Автомобили</a><a href="#process">Наш подход</a><a class="nav-btn" href="#contact">Обсудить проект →</a></div></nav>
-<main><section class="stage" id="start" aria-label="CHECK92 — чип-тюнинг и электроника"><div class="stage-sticky" id="sticky"><canvas role="img" id="gl" aria-label="Анимированная объёмная модель электронного блока управления"></canvas><div id="fallback" class="gl-fallback">Для 3D нужен браузер с WebGL/Canvas.</div><div class="hud" id="hud" data-phase="0">
-<div class="scene-copy"><h1>POWER.<br>WITH PURPOSE.</h1><p>Чип-тюнинг, диагностика и электроника в Севастополе. Точная работа с характером твоего автомобиля.</p></div>
+<main><section class="stage" id="start" aria-label="CHECK92 — чип-тюнинг и электроника"><div class="stage-sticky" id="sticky"><canvas role="img" id="gl" aria-label="Анимированная объёмная модель электронного блока управления"></canvas><div id="fallback" class="gl-fallback">Электронный блок управления. Точность начинается внутри.</div><div class="hud" id="hud" data-phase="0">
+<div class="scene-copy"><h1><span class="title-line">POWER.</span><span class="title-line">WITH PURPOSE.</span></h1><p>Чип-тюнинг, диагностика и электроника в Севастополе. Точная работа с характером твоего автомобиля.</p></div>
 <div class="panel panel-1"><h2>UNDER<br><em>THE SKIN.</em></h2><p>Корпус раскрывается. Внутри — электроника, алгоритмы и миллионы решений в секунду.</p></div>
 <div class="panel panel-2"><h2>PRECISION.<br>IN EVERY BIT.</h2><p>Точный подход начинается с диагностики, идентификации и анализа данных. Никакой магии. Только инженерия.</p></div>
 <div class="panel panel-3"><h2>RELEASE<br><em>POTENTIAL.</em></h2><p>Настройки должны работать на конкретном автомобиле, а не на красивую цифру в рекламе.</p></div>
-<div class="scene-footer"><div class="foot-actions"><button id="play" class="play" type="button">Смотреть 3D <span>→</span></button><span class="scroll-label">↓ ПРОКРУТИ ВНИЗ / ИССЛЕДУЙ</span></div><div class="progress-block"><span id="phase-label">Блок управления</span><div class="track"><i id="progress"></i></div></div></div>
+<div class="scene-footer"><div class="foot-actions"><button id="play" class="play" type="button">Смотреть 3D <span>→</span></button><span class="scroll-label">Прокрути, чтобы заглянуть внутрь ↓</span></div><div class="progress-block" aria-live="off"><span id="phase-label">Блок управления</span><div class="track"><i id="progress"></i></div></div></div>
 </div></div></section>
 <div class="manifesto"><p>Software drives hardware.</p><span>CHECK92</span></div>
 <section class="section intro" id="about"><div class="reveal"><h2>Характер<br>в деталях.</h2></div><p class="lead reveal">За каждым откликом педали и каждой долей секунды стоит программа. <b>Мы умеем говорить с электроникой автомобиля на её языке.</b> От диагностики до точной настройки — осмысленно, аккуратно, под задачу.</p></section>
@@ -50,7 +71,7 @@ new MutationObserver(syncScene).observe(document.querySelector('#hud'),{attribut
 const canvas=document.querySelector('#gl'),sticky=document.querySelector('#sticky'),stage=document.querySelector('#start'),hud=document.querySelector('#hud'),btn=document.querySelector('#play'),phaseLabel=document.querySelector('#phase-label'),progressEl=document.querySelector('#progress');
 let gl=canvas.getContext('webgl',{antialias:true,alpha:true,powerPreference:'low-power'});if(!gl){initCanvas3D();return}
 function initCanvas3D(){
-  const ctx=canvas.getContext('2d');if(!ctx){document.querySelector('#fallback').style.display='flex';return}
+  const ctx=canvas.getContext('2d');if(!ctx){document.querySelector('#fallback').style.display='block';btn.hidden=true;return}
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
   let pointerX=0,pointerY=0,scroll=0,auto=false,autoStart=0,progress=0,previousPhase=-1;
   const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(x,b));
@@ -92,10 +113,50 @@ function initCanvas3D(){
   const form=document.querySelector('#form'),toast=document.querySelector('#toast');let timer;form.addEventListener('submit',async e=>{e.preventDefault();let d=Object.fromEntries(new FormData(form)),s=`CHECK92 / ЗАЯВКА\nАвтомобиль: ${d.car}\nДвигатель/год: ${d.engine||'не указан'}\nЗадача: ${d.task}`;try{await navigator.clipboard.writeText(s);toast.textContent='Заявка скопирована'}catch(err){let t=document.createElement('textarea');t.value=s;document.body.append(t);t.select();document.execCommand('copy');t.remove();toast.textContent='Заявка подготовлена'}toast.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove('show'),4000)});
 }
 
-const vertex=`attribute vec3 p;attribute vec3 n;uniform mat4 vp;uniform vec3 pos;uniform vec3 scl;uniform vec3 localRot;uniform float yaw;uniform float tilt;uniform vec3 cameraOffset;uniform float worldScale;varying vec3 normal;varying vec3 world;vec3 rotate(vec3 v,vec3 a){float c=cos(a.x),s=sin(a.x);v=vec3(v.x,v.y*c-v.z*s,v.y*s+v.z*c);c=cos(a.y);s=sin(a.y);v=vec3(v.x*c+v.z*s,v.y,-v.x*s+v.z*c);c=cos(a.z);s=sin(a.z);return vec3(v.x*c-v.y*s,v.x*s+v.y*c,v.z);}void main(){vec3 q=rotate(p*scl,localRot)+pos;q=rotate(q,vec3(tilt,yaw,0.));q=q*worldScale+cameraOffset;world=q;normal=normalize(rotate(rotate(n,localRot),vec3(tilt,yaw,0.)));gl_Position=vp*vec4(q,1.);}`;
-const fragment=`precision mediump float;uniform vec3 col;uniform float glow;varying vec3 normal;varying vec3 world;void main(){vec3 N=normalize(normal);vec3 L=normalize(vec3(-.45,.95,1.));float lam=max(dot(N,L),0.);float rim=pow(1.-max(dot(N,normalize(vec3(.2,.7,1.))),0.),2.);float highlights=pow(max(dot(reflect(-L,N),normalize(vec3(.1,.85,1.))),0.),13.);vec3 c=col*(.27+.68*lam)+vec3(.33,.42,.48)*highlights*.22+vec3(1.,.29,.045)*rim*.055;c+=col*glow*.75;gl_FragColor=vec4(c,1.);}`;
+const instancing=gl.getExtension('ANGLE_instanced_arrays');
+const vertex=(instancing?'#define INSTANCED\n':'')+`attribute vec3 p;attribute vec3 n;uniform mat4 vp;
+#ifdef INSTANCED
+attribute vec3 pos;attribute vec3 scl;attribute vec3 localRot;attribute vec3 col;attribute vec2 finish;
+#else
+uniform vec3 pos;uniform vec3 scl;uniform vec3 localRot;uniform vec3 col;uniform float glow;uniform float metal;
+#endif
+varying vec3 surface;varying vec2 material;uniform float yaw;uniform float tilt;uniform vec3 cameraOffset;uniform float worldScale;varying vec3 normal;varying vec3 world;vec3 rotate(vec3 v,vec3 a){float c=cos(a.x),s=sin(a.x);v=vec3(v.x,v.y*c-v.z*s,v.y*s+v.z*c);c=cos(a.y);s=sin(a.y);v=vec3(v.x*c+v.z*s,v.y,-v.x*s+v.z*c);c=cos(a.z);s=sin(a.z);return vec3(v.x*c-v.y*s,v.x*s+v.y*c,v.z);}void main(){surface=col;
+#ifdef INSTANCED
+material=finish;
+#else
+material=vec2(glow,metal);
+#endif
+vec3 q=rotate(p*scl,localRot)+pos;q=rotate(q,vec3(tilt,yaw,0.));q=q*worldScale+cameraOffset;world=q;normal=normalize(rotate(rotate(n/scl,localRot),vec3(tilt,yaw,0.)));gl_Position=vp*vec4(q,1.);}`;
+const fragment=`precision mediump float;
+uniform vec3 eye;uniform float lightTurn;varying vec3 surface;varying vec2 material;
+varying vec3 normal;varying vec3 world;
+void main(){
+ vec3 N=normalize(normal),V=normalize(eye-world),R=reflect(-V,N);
+ vec3 L=normalize(vec3(-.65+lightTurn*.4,1.,.75));
+ float diffuse=max(dot(N,L),0.);
+ float fresnel=.045+.65*pow(1.-max(dot(N,V),0.),4.);
+ float key=pow(max(dot(R,normalize(vec3(-.6,1.,.8))),0.),36.);
+ float strip=pow(max(dot(R,normalize(vec3(.85,.4,-.4))),0.),64.);
+ float ceiling=smoothstep(.1,.7,R.y)*(1.-smoothstep(.18,.6,abs(R.x+.2)));
+ float brush=.97+.03*sin(world.x*160.+world.z*19.);
+ vec3 base=surface*(.09+.65*diffuse);
+ vec3 reflection=vec3(.92,.96,1.)*(key*1.7+ceiling*.55)+vec3(1.,.29,.075)*strip*.55;
+ vec3 c=base+reflection*(material.y*.8+fresnel)*brush;
+ c+=vec3(.55,.65,.8)*pow(max(dot(N,normalize(vec3(.9,.1,-1.))),0.),3.)*.08;
+ c+=surface*material.x*.8;
+ c=c/(c+vec3(.65));c=pow(c,vec3(.82));
+ gl_FragColor=vec4(c,1.);
+}`;
 const vs=gl.createShader(gl.VERTEX_SHADER);gl.shaderSource(vs,vertex);gl.compileShader(vs);const fs=gl.createShader(gl.FRAGMENT_SHADER);gl.shaderSource(fs,fragment);gl.compileShader(fs);let errors=gl.getShaderInfoLog(vs)+gl.getShaderInfoLog(fs);if(errors.trim())console.warn('WebGL shader notes',errors);const program=gl.createProgram();gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS)){document.querySelector('#fallback').style.display='flex';console.error(gl.getProgramInfoLog(program));return}
-gl.useProgram(program);const loc={};for(const k of ['vp','pos','scl','localRot','yaw','tilt','cameraOffset','worldScale','col','glow'])loc[k]=gl.getUniformLocation(program,k);let cube=[],normals=[];function face(points,n){for(const idx of [0,1,2,0,2,3]){cube.push(...points[idx]);normals.push(...n)}}const a=-.5,b=.5;face([[a,b,a],[a,b,b],[b,b,b],[b,b,a]],[0,1,0]);face([[a,a,b],[a,a,a],[b,a,a],[b,a,b]],[0,-1,0]);face([[a,a,b],[b,a,b],[b,b,b],[a,b,b]],[0,0,1]);face([[b,a,a],[a,a,a],[a,b,a],[b,b,a]],[0,0,-1]);face([[a,a,a],[a,a,b],[a,b,b],[a,b,a]],[-1,0,0]);face([[b,a,b],[b,a,a],[b,b,a],[b,b,b]],[1,0,0]);const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);const arr=new Float32Array(cube.length*2);for(let i=0;i<cube.length/3;i++){arr.set(cube.slice(i*3,i*3+3),i*6);arr.set(normals.slice(i*3,i*3+3),i*6+3)}gl.bufferData(gl.ARRAY_BUFFER,arr,gl.STATIC_DRAW);const pLoc=gl.getAttribLocation(program,'p'),nLoc=gl.getAttribLocation(program,'n');gl.enableVertexAttribArray(pLoc);gl.vertexAttribPointer(pLoc,3,gl.FLOAT,false,24,0);gl.enableVertexAttribArray(nLoc);gl.vertexAttribPointer(nLoc,3,gl.FLOAT,false,24,12);
+gl.useProgram(program);const loc={};for(const k of ['vp','pos','scl','localRot','yaw','tilt','cameraOffset','worldScale','col','glow','eye','lightTurn','metal'])loc[k]=gl.getUniformLocation(program,k);let cube=[],normals=[];
+// A 54-quad rounded box: bevels catch light; flat faces stay flat.
+const knots=[-.5,-.44,.44,.5];
+function rounded(v){const core=v.map(x=>Math.max(-.44,Math.min(.44,x))),d=v.map((x,i)=>x-core[i]),l=Math.hypot(...d);return {p:core.map((x,i)=>x+d[i]/l*.06),n:d.map(x=>x/l)}}
+for(let axis=0;axis<3;axis++)for(const sign of [-1,1])for(let u=0;u<3;u++)for(let v=0;v<3;v++){
+ const corners=[[u,v],[u+1,v],[u+1,v+1],[u,v+1]].map(([i,j])=>{let q=[0,0,0];q[axis]=sign*.5;q[(axis+1)%3]=knots[i];q[(axis+2)%3]=knots[j];return rounded(q)});
+ for(const i of [0,1,2,0,2,3]){cube.push(...corners[i].p);normals.push(...corners[i].n)}
+}
+const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);const arr=new Float32Array(cube.length*2);for(let i=0;i<cube.length/3;i++){arr.set(cube.slice(i*3,i*3+3),i*6);arr.set(normals.slice(i*3,i*3+3),i*6+3)}gl.bufferData(gl.ARRAY_BUFFER,arr,gl.STATIC_DRAW);const pLoc=gl.getAttribLocation(program,'p'),nLoc=gl.getAttribLocation(program,'n');gl.enableVertexAttribArray(pLoc);gl.vertexAttribPointer(pLoc,3,gl.FLOAT,false,24,0);gl.enableVertexAttribArray(nLoc);gl.vertexAttribPointer(nLoc,3,gl.FLOAT,false,24,12);
 const parts=[];function add(group,x,y,z,w,h,d,color,opts={}){parts.push({group,x,y,z,w,h,d,color,opts})}const iron=[.38,.42,.45],side=[.22,.25,.27],silver=[.60,.64,.67],black=[.075,.09,.10],pcb=[.065,.22,.17],gold=[.72,.48,.19],orange=[1,.26,.055],chip=[.052,.067,.069];
 // Bottom case and engineering hardware.
 add('base',0,-.48,0,4.7,.28,3.2,side);add('base',-2.25,-.21,0,.20,.40,3.18,iron);add('base',2.25,-.21,0,.20,.40,3.18,iron);add('base',0,-.21,-1.50,4.5,.4,.18,iron);add('base',0,-.21,1.50,4.5,.4,.18,iron);
@@ -108,6 +169,9 @@ add('board',0,.135,0,.93,.21,.93,chip);add('board',0,.254,0,.68,.018,.68,[.12,.1
 for(let i=0;i<4;i++){let zz=-.75+i*.5;add('board',1.24,.12,zz,.58,.19,.26,black);add('board',1.24,.22,zz,.41,.011,.05,[.38,.39,.39]);}
 for(let i=0;i<12;i++){let x=-1.73+i*.30;add('board',x,.055,1.20,.09,.12,.25,i%2?silver:black)}
 for(let k=0;k<20;k++){let x=-1.8+(k%10)*.38,z=-1.20+Math.floor(k/10)*2.39;add('board',x,.055,z,.09,.07,.10,[.38,.39,.34])}
+// MCU contacts and orthogonal copper routes, physically placed on the PCB.
+for(let i=0;i<14;i++)for(const edge of [-1,1]){let t=-.39+i*.06;add('board',t,.08,edge*.51,.026,.035,.13,gold);add('board',edge*.51,.08,t,.13,.035,.026,gold)}
+for(let i=0;i<16;i++){let x=-1.7+i*.22,z=-.8+(i%5)*.35;add('board',x,.022,z,.016,.012,.7,[.21,.36,.25]);add('board',x+.16,.024,z+.35,.33,.012,.016,[.23,.37,.27])}
 // Edge connector, gold contacts and clips.
 for(let k=0;k<3;k++){let x=-1.31+k*1.32;add('base',x,-.22,-1.80,1.12,.65,.50,black);add('base',x,-.22,-2.07,.97,.5,.09,iron);for(let n=0;n<9;n++)add('base',x-.42+n*.104,-.15,-2.135,.048,.12,.026,gold)}
 for(let x of [-2.1,2.1])for(let z of [-1.28,1.28]){add('base',x,-.03,z,.2,.065,.2,black);add('base',x,.01,z,.08,.026,.08,silver)}
@@ -117,17 +181,83 @@ add('lid',0,.655,-.84,1.35,.018,.15,orange,{glow:.18});add('lid',0,.655,-.58,.95
 for(let x of [-2.07,2.07])for(let z of [-1.32,1.32]){add('lid',x,.565,z,.18,.03,.18,black);add('lid',x,.582,z,.074,.018,.074,silver)}
 // Scan line moving above board at end of animation.
 add('scan',0,.43,0,4.15,.015,.035,orange,{glow:.9});
+const instanceData=new Float32Array(parts.length*14),instanceBuffer=instancing?gl.createBuffer():null;
+if(instancing){gl.bindBuffer(gl.ARRAY_BUFFER,instanceBuffer);gl.bufferData(gl.ARRAY_BUFFER,instanceData.byteLength,gl.DYNAMIC_DRAW);let offset=0;for(const [name,size] of [['pos',3],['scl',3],['localRot',3],['col',3],['finish',2]]){const at=gl.getAttribLocation(program,name);gl.enableVertexAttribArray(at);gl.vertexAttribPointer(at,size,gl.FLOAT,false,56,offset*4);instancing.vertexAttribDivisorANGLE(at,1);offset+=size}}
 function persp(fov,aspect,near,far){let f=1/Math.tan(fov/2),nf=1/(near-far);return [f/aspect,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0]}
 function lookAt(eye,target){let z=normalize(sub(eye,target)),x=normalize(cross([0,1,0],z)),y=cross(z,x);return [x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]}
 function sub(a,b){return a.map((v,i)=>v-b[i])}function dot(a,b){return a.reduce((s,v,i)=>s+v*b[i],0)}function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}function normalize(v){let n=Math.hypot(...v);return v.map(x=>x/n)}function mul(a,b){let o=Array(16).fill(0);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o}
-const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),smooth=(a,b,x)=>{let t=clamp((x-a)/(b-a));return t*t*(3-2*t)};let scroll=0,virtual=0,auto=false,autoStarted=0,manualUntil=0,pointerX=0,pointerY=0,lastPhase=-1;function getScroll(){let r=stage.getBoundingClientRect();return clamp(-r.top/(r.height-window.innerHeight))}function updateScroll(){scroll=getScroll()}addEventListener('scroll',updateScroll,{passive:true});updateScroll();
-btn.addEventListener('click',()=>{if(reduced){window.scrollTo({top:stage.offsetTop+((scroll+.26)%1)*(stage.offsetHeight-innerHeight),behavior:'instant'});return}auto=!auto;autoStarted=reduced?0:performance.now();virtual=auto?0:scroll;btn.firstChild.textContent=auto?'Остановить 3D ':'Смотреть 3D ';if(auto){stage.scrollIntoView({behavior:'smooth',block:'start'})}});
-canvas.addEventListener('pointermove',e=>{if(!matchMedia('(hover:hover) and (pointer:fine)').matches||matchMedia('(prefers-reduced-motion:reduce)').matches)return;pointerX=(e.clientX/window.innerWidth-.5)*2;pointerY=(e.clientY/window.innerHeight-.5)*2},{passive:true});canvas.addEventListener('pointerleave',()=>{pointerX=0;pointerY=0});let reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function resize(){let dpr=Math.min(devicePixelRatio||1,innerWidth<850?1.25:1.7);let w=Math.floor(canvas.clientWidth*dpr),h=Math.floor(canvas.clientHeight*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h)}}
-let then=performance.now(),currentP=0;function frame(now){requestAnimationFrame(frame);if(document.hidden||stage.getBoundingClientRect().bottom<0)return;if(reduced)now=0;let dt=Math.min(.05,(now-then)/1000);then=now;resize();if(auto){virtual=clamp((now-autoStarted)/9000);if(virtual>=1){auto=false;btn.firstChild.textContent='Повторить 3D ';}}let target=auto?virtual:scroll;currentP=reduced?target:currentP+(target-currentP)*Math.min(1,dt*5);const p=currentP;let phase=p<.24?0:p<.51?1:p<.78?2:3;if(phase!==lastPhase){hud.dataset.phase=phase;lastPhase=phase;phaseLabel.textContent=['Блок управления','Аппаратная платформа','Анализ данных','Точный отклик'][phase]}progressEl.style.transform='scaleX('+p.toFixed(4)+')';
-gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
-const aspect=canvas.width/canvas.height;const mobile=innerWidth<850;let explode=smooth(.14,.47,p),inspect=smooth(.46,.77,p),conclude=smooth(.76,.96,p);let pitch=.16+Math.sin(now*.00048)*.035+pointerY*.1;let yaw=-.32+Math.sin(now*.00065)*.23+pointerX*.20+p*.88;let globalScale=(mobile? .46:.86)*(1+inspect*.08-conclude*.06);let shiftX=(mobile?0:3.1)-inspect*(mobile?.06:.18);let shiftY=(mobile?-1.9:-.2)-inspect*.1+Math.sin(now*.0009)*.045;let VP=mul(persp(.65,aspect,.1,100),lookAt([0,5.4,11.5],[0,0,0]));gl.uniformMatrix4fv(loc.vp,false,new Float32Array(VP));gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.tilt,pitch);gl.uniform3f(loc.cameraOffset,shiftX,shiftY,0);gl.uniform1f(loc.worldScale,globalScale);
-let scanPos=-1.40+(now*.0021%2.8);for(const part of parts){if(part.group==='scan'&&(p<.64||p>.95))continue;let x=part.x,y=part.y,z=part.z,roll=0,partYaw=0;if(part.group==='lid'){y+=2.25*explode+inspect*.85;x+=1.15*explode+.7*inspect;z+=.28*explode;roll=.33*explode;partYaw=.4*explode;}if(part.group==='board'){y+=.55*explode+1.1*inspect;x-=.20*inspect;z+=.12*inspect;}if(part.group==='scan'){y+=.55*explode+1.1*inspect;x-=.20*inspect;z=scanPos+.12*inspect;}if(part.group==='base'){y-=.28*explode+.8*inspect;x-=.8*explode+.5*inspect;}gl.uniform3f(loc.pos,x,y,z);gl.uniform3f(loc.scl,part.w,part.h,part.d);gl.uniform3f(loc.localRot,0,partYaw,roll);gl.uniform3fv(loc.col,part.color);gl.uniform1f(loc.glow,part.group==='scan'?(.5+.5*Math.sin(now*.007)):part.opts.glow||0);gl.drawArrays(gl.TRIANGLES,0,36)}}requestAnimationFrame(frame);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+let scroll=0,auto=false,autoStarted=0,autoFrom=0,currentP=0,lastPhase=-1,pointerX=0,pointerY=0,px=0,py=0;
+const motion=matchMedia('(prefers-reduced-motion:reduce)'),fine=matchMedia('(hover:hover) and (pointer:fine)');
+let reduced=motion.matches,active=true,dirty=true,lastTime=0,rectTop=0,sceneRange=1;const enteredAt=performance.now();
+const visible=new IntersectionObserver(entries=>{active=entries[0].isIntersecting;dirty=true},{rootMargin:'100px'});visible.observe(stage);
+function measure(){rectTop=stage.getBoundingClientRect().top+scrollY;sceneRange=Math.max(1,stage.offsetHeight-innerHeight);updateScroll()}
+function stopAuto(){auto=false;btn.firstChild.textContent='Смотреть 3D ';btn.setAttribute('aria-pressed','false')}
+function updateScroll(){scroll=clamp((scrollY-rectTop)/sceneRange);dirty=true}
+addEventListener('scroll',updateScroll,{passive:true});addEventListener('resize',measure,{passive:true});
+addEventListener('wheel',()=>{if(auto){scroll=currentP;window.scrollTo({top:rectTop+currentP*sceneRange,behavior:'instant'});stopAuto()}},{passive:true});
+addEventListener('touchstart',()=>{if(auto){window.scrollTo({top:rectTop+currentP*sceneRange,behavior:'instant'});stopAuto()}},{passive:true});
+motion.addEventListener('change',()=>{reduced=motion.matches;stopAuto();dirty=true});
+btn.setAttribute('aria-pressed','false');
+btn.addEventListener('click',()=>{
+ if(reduced){window.scrollTo({top:rectTop+((scroll+.26)%1)*sceneRange,behavior:'instant'});return}
+ if(auto){window.scrollTo({top:rectTop+currentP*sceneRange,behavior:'instant'});stopAuto();return}
+ auto=true;autoFrom=currentP>.96?0:currentP;autoStarted=performance.now();btn.firstChild.textContent='Остановить 3D ';btn.setAttribute('aria-pressed','true');stage.scrollIntoView({behavior:'smooth',block:'start'});dirty=true;
+});
+canvas.addEventListener('pointermove',e=>{if(!fine.matches||reduced)return;pointerX=(e.clientX/innerWidth-.5)*2;pointerY=(e.clientY/innerHeight-.5)*2;dirty=true},{passive:true});
+canvas.addEventListener('pointerleave',()=>{pointerX=pointerY=0;dirty=true});
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();active=false;document.querySelector('#fallback').style.display='block'});
+canvas.addEventListener('webglcontextrestored',()=>location.reload());
+let dprCap=innerWidth<850?1.35:1.75,slowFrames=0;
+function resize(){const dpr=Math.min(devicePixelRatio||1,dprCap),w=Math.round(canvas.clientWidth*dpr),h=Math.round(canvas.clientHeight*dpr);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);dirty=true}}
+measure();
+function frame(now){
+ requestAnimationFrame(frame);
+ if(document.hidden||!active){lastTime=now;return}
+ const elapsed=lastTime?now-lastTime:16;lastTime=now;const dt=Math.min(.05,elapsed/1000);
+ if(elapsed>26&&!reduced){if(++slowFrames>45&&dprCap>1){dprCap=1;slowFrames=0;dirty=true}}else slowFrames=Math.max(0,slowFrames-1);
+ resize();
+ let target=scroll;
+ if(auto){target=clamp(autoFrom+(now-autoStarted)/14000);if(target>=1){window.scrollTo({top:rectTop+sceneRange,behavior:'instant'});stopAuto()}}
+ const entrance=reduced?0:1-smooth(0,1500,now-enteredAt);
+ const before=currentP;currentP=reduced?target:currentP+(target-currentP)*(1-Math.exp(-dt*9));
+ px+=(pointerX-px)*(1-Math.exp(-dt*7));py+=(pointerY-py)*(1-Math.exp(-dt*7));
+ if(!dirty&&!auto&&entrance===0&&Math.abs(before-currentP)<.00005&&Math.abs(pointerX-px)<.001&&Math.abs(pointerY-py)<.001)return;
+ dirty=false;const p=currentP;
+ const phase=p<.23?0:p<.49?1:p<.76?2:3;
+ if(phase!==lastPhase){hud.dataset.phase=phase;lastPhase=phase;phaseLabel.textContent=['Блок управления','Аппаратная платформа','Анализ данных','Точный отклик'][phase]}
+ progressEl.style.transform='scaleX('+p.toFixed(4)+')';
+ // Four editorial shots: reveal, separation, circuit inspection, reassembly.
+ const open=smooth(.12,.38,p),inspection=smooth(.40,.66,p),resolve=smooth(.77,.98,p);
+ const explode=open*(1-resolve),inspect=inspection*(1-resolve);
+ const mobile=innerWidth<850&&innerHeight>=innerWidth,aspect=canvas.width/canvas.height;
+ const yaw=-.58+open*.38+inspection*.38-resolve*.82+entrance*.13+(reduced?0:px*.055);
+ const pitch=.10-inspection*.12+resolve*.10+(reduced?0:py*.035);
+ const eye=[inspection*.28,5.4+inspection*1.4,12.8-inspection*.7];
+ const globalScale=(mobile?.51:.90)*(1+inspect*.19+resolve*.08+entrance*.05);
+ const shiftX=mobile?-.16:2.75,shiftY=(mobile?-1.85:-.18)-inspect*.2;
+ const VP=mul(persp(.65-inspection*.025,aspect,.1,100),lookAt(eye,[inspection*.1,inspection*.25,0]));
+ gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
+ gl.uniformMatrix4fv(loc.vp,false,new Float32Array(VP));gl.uniform3fv(loc.eye,eye);gl.uniform1f(loc.lightTurn,p+entrance*.45);gl.uniform1f(loc.yaw,yaw);gl.uniform1f(loc.tilt,pitch);gl.uniform3f(loc.cameraOffset,shiftX,shiftY,0);gl.uniform1f(loc.worldScale,globalScale);
+ const scanPos=-1.35+smooth(.50,.74,p)*2.7;let instanceCount=0;
+ for(const part of parts){
+  if(part.group==='scan'&&(p<.5||p>.75||reduced))continue;
+  let x=part.x,y=part.y,z=part.z,roll=0,partYaw=0;
+  if(part.group==='lid'){y+=1.9*explode+inspect*.42;x+=.35*explode+1.7*inspect;z+=.16*explode-.6*inspect;roll=.17*explode+.13*inspect;partYaw=.13*explode+.12*inspect}
+  if(part.group==='board'||part.group==='scan'){y+=.45*explode+.55*inspect;x-=.08*inspect;if(part.group==='scan')z=scanPos;else z+=.06*inspect}
+  if(part.group==='base'){y-=.30*explode+.32*inspect;x-=.24*explode+.10*inspect}
+  const c=part.color,isMetal=(Math.abs(c[0]-c[1])<.09&&c[0]>.18)||c[0]>.55&&c[1]>.35;
+  if(instancing){instanceData.set([x,y,z,part.w,part.h,part.d,0,partYaw,roll,...c,part.opts.glow||0,isMetal?.9:.07],instanceCount++*14)}
+  else{gl.uniform3f(loc.pos,x,y,z);gl.uniform3f(loc.scl,part.w,part.h,part.d);gl.uniform3f(loc.localRot,0,partYaw,roll);gl.uniform3fv(loc.col,c);gl.uniform1f(loc.metal,isMetal?.9:.07);gl.uniform1f(loc.glow,part.opts.glow||0);gl.drawArrays(gl.TRIANGLES,0,cube.length/3)}
+ }
+ if(instancing){gl.bindBuffer(gl.ARRAY_BUFFER,instanceBuffer);gl.bufferSubData(gl.ARRAY_BUFFER,0,instanceData.subarray(0,instanceCount*14));instancing.drawArraysInstancedANGLE(gl.TRIANGLES,0,cube.length/3,instanceCount)}
+ canvas.dataset.drawCalls=instancing?'1':String(parts.length);
+ // Instrumentation is read-only and lets browser QA verify live camera / render changes.
+ canvas.dataset.frame=String((+canvas.dataset.frame||0)+1);canvas.dataset.progress=p.toFixed(4);canvas.dataset.dpr=dprCap;
+}
+requestAnimationFrame(frame);
+
 const form=document.querySelector('#form'),toast=document.querySelector('#toast');let timer;form.addEventListener('submit',async e=>{e.preventDefault();let d=Object.fromEntries(new FormData(form)),s=`CHECK92 / ЗАЯВКА\nАвтомобиль: ${d.car}\nДвигатель/год: ${d.engine||'не указан'}\nЗадача: ${d.task}`;try{await navigator.clipboard.writeText(s);toast.textContent='Заявка скопирована в буфер обмена'}catch(err){let t=document.createElement('textarea');t.value=s;document.body.append(t);t.select();document.execCommand('copy');t.remove();toast.textContent='Заявка подготовлена'}toast.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>toast.classList.remove('show'),4000)});
 })();
 </script>
@@ -157,4 +287,4 @@ form.addEventListener('submit',e=>{e.preventDefault();e.stopImmediatePropagation
 document.querySelector('#copy-request').addEventListener('click',()=>{if(form.reportValidity())copy()});
 })();
 </script>
-</body></html>
+<script src="studio.js" defer></script></body></html>

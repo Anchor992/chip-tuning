@@ -1,0 +1,56 @@
+name: CHECK92 APEX preview build and proof
+on:
+  push:
+    branches: [design/check92-apex-20261027]
+    paths:
+      - cinematic-preview/apex-source.js
+      - cinematic-preview/apex.css
+      - cinematic-preview/apex-build.py
+      - cinematic-preview/apex-qa.mjs
+      - .github/workflows/check92-apex.yml
+permissions:
+  contents: write
+concurrency:
+  group: check92-apex-preview
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned build tools
+        run: npm install --prefix cinematic-preview/.build --ignore-scripts --no-audit --no-fund three@0.180.0 esbuild@0.25.5 playwright@1.56.1
+      - name: Build separate preview, preserving original site
+        run: |
+          python cinematic-preview/apex-build.py
+          NODE_PATH="$PWD/cinematic-preview/.build/node_modules" cinematic-preview/.build/node_modules/.bin/esbuild cinematic-preview/apex-source.js --bundle --minify --format=esm --target=safari15 --outfile=cinematic-preview/apex.bundle.js
+          node --check cinematic-preview/apex.bundle.js
+      - name: Install test browser
+        run: node cinematic-preview/.build/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Exercise all scenes and preserved features
+        run: |
+          python -m http.server 8765 --directory cinematic-preview >/tmp/check92-preview.log 2>&1 &
+          node cinematic-preview/apex-qa.mjs
+      - name: Save browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check92-apex-browser-proof
+          path: cinematic-preview/apex-proof/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Publish only generated preview files to this isolated branch
+        if: success()
+        run: |
+          test "$GITHUB_REF_NAME" = 'design/check92-apex-20261027'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add cinematic-preview/apex.html cinematic-preview/apex.bundle.js cinematic-preview/apex-build-report.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build CHECK92 APEX preview after browser checks [skip ci]'
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi

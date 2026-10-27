@@ -16,7 +16,7 @@ concurrency:
 jobs:
   preview:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,8 +33,9 @@ jobs:
           cp cinematic-preview/{index.html,apex.html,apex.css,apex.bundle.js,studio.js,film.js} cinematic-preview/apex-proof/site/
           cp -R cinematic-preview/assets cinematic-preview/apex-proof/site/
       - name: Install test browser
-        run: node cinematic-preview/.build/node_modules/playwright/cli.js install --with-deps chromium
+        run: node cinematic-preview/.build/node_modules/playwright/cli.js install chromium
       - name: Exercise all scenes and preserved features
+        timeout-minutes: 5
         run: |
           python -m http.server 8765 --directory cinematic-preview >/tmp/check92-preview.log 2>&1 &
           node cinematic-preview/apex-qa.mjs

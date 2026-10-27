@@ -1,4 +1,4 @@
-# CHECK92 Cinematic — studio edition
+# CHECK92 Cinematic — licensed-model film edition
 
 Mode: Experience, leading into vehicle selection and contact.
 
@@ -14,7 +14,15 @@ Native scrolling, a bounded camera entrance, masked text reveals, 70ms text stag
 
 The complete ECU uses one instanced GPU draw on compatible WebGL devices; the original separate-draw route remains available. Resolution adapts downward on slow devices. Settled, offscreen and hidden scenes do not issue draw calls. Reduced motion removes camera entrances, inertia, scan movement, parallax and text travel; the play control advances chapters. Wheel, touch and keyboard navigation interrupt playback. Context loss exposes a useful fallback; unavailable WebGL uses the preserved canvas renderer.
 
-No stock imagery or fake vehicle render was introduced. The ECU is the original procedural illustration, not a photograph. External font loading retains a system fallback.
+Real downloaded assets now extend the visual journey across the entire page. The hero follows a licensed sports-car concept; the original ECU remains intact; the introduction orbits a separate CAD V8; services separate its 18 named exterior parts; process reassembles it; selector and contact have real-model vehicle views. The concept does not change to match the user's selected marque and is explicitly identified as illustrative.
+
+Asset provenance and licenses were checked before download. Car Concept, by Eric Chadwick / Darmstadt Graphics Group GmbH via Khronos, is CC BY 4.0; its displayed third-party branding and wipers were removed, paint recolored, geometry optimized and textures resized to 1024px WebP. The 1.89 MB result is self-hosted. Innerscene's CC0 unbranded V8 was downloaded as STEP, tessellated, material-adjusted and compressed to about 341 KB; merging face primitives retained all 18 named parts and reduced the render cost to 19 draw calls. Poly Haven's CC0 Studio Small 09 supplies real HDR environment reflections. The prior ECU remains the original procedural illustration. Credits and modifications are linked visibly in the footer and documented in assets/manifest.json and assets/credits.html.
+
+One shared imported-model renderer uses scissored viewports for selector and contact, preventing the car from crossing their text. It pauses drawing when settled or hidden, uses bounded phone resolution and reduces resolution on slow frames. Models are Meshopt-compressed, all resources and the Three.js bundle are local, and no paid API or runtime CDN is used. Engine loading is deferred until needed, including direct navigation to its chapters. Tiny posters rendered from the actual assets cover loading and unavailable graphics. Reduced-motion mode removes continuous camera choreography and keeps every service visible and accessible.
+
+The added Three.js r180 runtime is necessary for real glTF materials, asset loading, HDR reflections and camera projection. Build source is retained in film-source.js. Rebuild film.js with Three.js 0.180.0 and esbuild using: `esbuild film-source.js --bundle --minify --format=esm --target=safari15 --outfile=film.js`. Software notices are under assets/licenses. The core site remains buildless.
+
+Film edition QA: tested the hero, original ECU, engine introduction, mechanical separation and reassembly at 10%, 55% and 90% of each scroll hold, on 1440px desktop and 390px / 375px portrait phones. Live frame counters and intermediate progress proved actual interpolated rendering. All eight brands, model selection, prefill, clipboard and Telegram handoff passed; no JavaScript errors or horizontal overflow. Reviewed the selector and closing vehicle views, then corrected phone process-CTA clearance and checked it again. Reduced motion keeps all services visible; unavailable WebGL preserves the real-model posters and working selector. Physical iPhone Safari and hardware frame rate remain unverified.
 
 QA: Chromium desktop 1440×1000, tablet 768×1024, portrait phone 390×844 and 375×667, landscape 844×390. Actual advancing frames and timeline progress were checked during autoplay; settled and reduced-motion scenes produced zero idle renders. Captured and reviewed all camera shots and editorial sections. Checked overflow, heading wrapping, all eight brands, model changes, prefill, copy and Telegram handoff; no JavaScript errors. Both instanced WebGL and the no-WebGL canvas route were exercised. Browser emulation is not a physical iPhone Safari test. The supplied skill inspector and scene helper files remain unavailable.
 

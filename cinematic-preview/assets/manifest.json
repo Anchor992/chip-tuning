@@ -1,0 +1,10 @@
+{
+  "verified_on": "2026-10-27",
+  "assets": [
+    {"file":"car.glb","title":"Car Concept","creator":"Eric Chadwick / Darmstadt Graphics Group GmbH","license":"CC-BY-4.0","source":"https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept","license_source":"https://github.com/KhronosGroup/glTF-Sample-Assets/blob/main/Models/CarConcept/LICENSE.md","changes":"Recolored paint; removed displayed logos, wipers and emblem; simplified geometry; 1024px WebP textures; Meshopt compression"},
+    {"file":"engine.glb","title":"Unbranded V8 engine assembly","creator":"Innerscene","license":"CC0-1.0","source":"https://www.innerscene.com/tools/library/3d-parts/unbranded-v8-engine-assembly-9fee249a","original_download":"https://www.innerscene.com/api/library/unbranded-v8-engine-assembly-9fee249a/download","changes":"STEP tessellation, merged CAD face primitives within each of 18 named parts, material adjustments, Meshopt compression"},
+    {"file":"studio.hdr","title":"Studio Small 09","creator":"Poly Haven","license":"CC0-1.0","source":"https://polyhaven.com/a/studio_small_09","license_source":"https://polyhaven.com/license","changes":"Original 1K HDRI, used for environment lighting"}
+  ],
+  "excluded_sources": "Sketchfab candidates required authenticated downloads. CGTrader standard royalty-free terms restrict recoverable redistribution. No asset with missing, noncommercial, editorial-only, or ambiguous rights was included.",
+  "branding": "Vehicle and engine are illustrative assets; neither changes to match the selector, nor implies measured performance, service compatibility or endorsement."
+}

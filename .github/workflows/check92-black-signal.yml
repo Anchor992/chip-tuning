@@ -6,7 +6,7 @@ on:
       - '.github/workflows/check92-black-signal.yml'
       - 'cinematic-preview/black-signal/**'
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: check92-black-signal-preview
   cancel-in-progress: true
@@ -16,81 +16,60 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install pinned preview-only tools
-        run: npm install --prefix .check92-tools --ignore-scripts --no-audit --no-fund three@0.180.0 esbuild@0.25.10 playwright@1.56.1
-      - name: Prepare isolated source and asset review package
-        shell: bash
+      - name: Install pinned preview tools
+        run: |
+          npm install --prefix .check92-tools --ignore-scripts --no-audit --no-fund three@0.180.0 esbuild@0.25.10 playwright@1.56.1
+          python3 -m pip install Pillow==11.3.0
+      - name: Prepare isolated build and verify model provenance
         run: |
           mkdir -p /tmp/check92-review/cinematic-preview /tmp/check92-review/review
           cp -a cinematic-preview/. /tmp/check92-review/cinematic-preview/
           cp -a .check92-tools/node_modules /tmp/check92-review/node_modules
-          python3 - <<'PY'
-          import hashlib, json, pathlib, urllib.request
-          out = pathlib.Path('/tmp/check92-review')
-          headers = {'User-Agent':'Check92-asset-review','Accept':'application/vnd.github+json'}
-          def get(url):
-              req=urllib.request.Request(url,headers=headers)
-              with urllib.request.urlopen(req,timeout=60) as r:
-                  return r.read()
-          repo='pedrosoandre/carros'
-          try:
-              commit=json.loads(get(f'https://api.github.com/repos/{repo}/commits/main'))['sha']
-              base=f'https://raw.githubusercontent.com/{repo}/{commit}/'
-              catalog=json.loads(get(base+'cars.json'))
-              candidates=[]
-              ids=('ac3c7013434e403e8faff87948caf422','e17e438f076f4427a58d93aa779edaed','8568d9d14a994b9cae59499f0dbed21e')
-              assets=out/'cinematic-preview/black-signal/assets'
-              assets.mkdir(parents=True,exist_ok=True)
-              for source_id in ids:
-                  matches=[c for c in catalog['cars'] if source_id in json.dumps(c.get('credit',{}))]
-                  if not matches:
-                      print('MISSING VERIFIED SOURCE',source_id)
-                      continue
-                  c=min(matches,key=lambda x:x.get('bytes',10**9))
-                  license_name=c.get('credit',{}).get('license','')
-                  if license_name not in ('CC Attribution','CC BY','CC BY 4.0','CC0','CC0 Public Domain'):
-                      print('REJECTED LICENSE',c['id'],license_name)
-                      continue
-                  file=c['file']
-                  if '/' in file or not file.endswith('.glb'):
-                      raise ValueError('Unexpected model path')
-                  content=get(base+'assets/'+file)
-                  if content[:4] != b'glTF':
-                      raise ValueError('Not a GLB')
-                  (assets/file).write_bytes(content)
-                  c=dict(c,mirrorCommit=commit,download=base+'assets/'+file,sha256=hashlib.sha256(content).hexdigest())
-                  candidates.append(c)
-                  print('REVIEW MODEL',json.dumps(c,ensure_ascii=False))
-              (out/'review/model-review.json').write_text(json.dumps(candidates,indent=2,ensure_ascii=False))
-              (assets/'model-review.json').write_text(json.dumps(candidates,indent=2,ensure_ascii=False))
-          except Exception as e:
-              (out/'review/asset-error.txt').write_text(str(e))
-              print('ASSET REVIEW LIMITATION:',str(e))
-          PY
-      - name: Build preview when implementation is present
+          python3 /tmp/check92-review/cinematic-preview/black-signal/fetch_assets.py
+          python3 /tmp/check92-review/cinematic-preview/black-signal/optimize_assets.py
+      - name: Compile the actual implementation
         working-directory: /tmp/check92-review
         run: |
-          if [ -f cinematic-preview/black-signal/main.js ]; then
-            node node_modules/esbuild/bin/esbuild cinematic-preview/black-signal/main.js --bundle --format=esm --minify --target=safari16 --outfile=cinematic-preview/black-signal/app.js
-          fi
-      - name: Run browser QA when test suite is present
+          node --check cinematic-preview/black-signal/main.js
+          node --check cinematic-preview/black-signal/ecu.js
+          node node_modules/esbuild/bin/esbuild cinematic-preview/black-signal/main.js --bundle --format=esm --minify --target=safari16 --outfile=cinematic-preview/black-signal/app.js
+      - name: Render and test desktop and mobile viewports
         working-directory: /tmp/check92-review
         run: |
-          if [ -f cinematic-preview/black-signal/qa.mjs ]; then
-            node node_modules/playwright/cli.js install --with-deps chromium
-            python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/check92-server.log 2>&1 &
-            node cinematic-preview/black-signal/qa.mjs
+          node node_modules/playwright/cli.js install --with-deps chromium
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/check92-server.log 2>&1 &
+          node cinematic-preview/black-signal/qa.mjs
+      - name: Preserve generated preview assets on this branch only
+        if: success()
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          branch=design/check92-black-signal-20261028
+          test "$GITHUB_REF" = "refs/heads/$branch"
+          git fetch origin "$branch"
+          if [ "$(git rev-parse FETCH_HEAD)" != "$SOURCE_SHA" ]; then
+            echo 'Branch moved; leaving generated output in the artifact without overwriting newer work.'
+            exit 0
           fi
-      - name: Upload review files, never deploy
+          mkdir -p cinematic-preview/black-signal/assets
+          cp -a /tmp/check92-review/cinematic-preview/black-signal/assets/. cinematic-preview/black-signal/assets/
+          cp /tmp/check92-review/cinematic-preview/black-signal/app.js cinematic-preview/black-signal/app.js
+          git add -- cinematic-preview/black-signal/assets cinematic-preview/black-signal/app.js
+          if ! git diff --cached --quiet; then
+            git -c user.name='Check92 preview builder' -c user.email='check92-preview@users.noreply.github.com' commit -m 'build: preserve tested isolated preview assets [skip ci]'
+            git push origin "HEAD:refs/heads/$branch"
+          fi
+      - name: Upload standalone build and evidence, never deploy
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: check92-black-signal-review
-          path: /tmp/check92-review
+          path: |
+            /tmp/check92-review/cinematic-preview
+            /tmp/check92-review/review
           retention-days: 7
           if-no-files-found: error

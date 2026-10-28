@@ -1,0 +1,1 @@
+{"name":"check92-black-signal","private":true,"type":"module","scripts":{"build":"esbuild main.js --bundle --format=esm --minify --target=safari16 --outfile=app.js","test":"node qa.mjs","serve":"python -m http.server 8765 --directory ../.."},"dependencies":{"three":"0.180.0"},"devDependencies":{"esbuild":"0.25.10","playwright":"1.56.1"}}

@@ -10,7 +10,7 @@ const url=process.env.CHECK92_BASE_URL||'http://127.0.0.1:8765/cinematic-preview
 const report={testedAt:new Date().toISOString(),renderer:'Headless Chromium / software WebGL; not physical iPhone or hardware FPS',checks:[],errors:[],states:[]};
 const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader','--use-angle=swiftshader']});
 async function ready(page){await page.waitForFunction(()=>window.__check92?.snapshot().loaded.every(Boolean),{},{timeout:60000});await page.waitForTimeout(1200)}
-async function at(page,p){await page.evaluate(progress=>{const m=window.__check92.snapshot().metrics;window.scrollTo({top:m.filmTop+m.filmTravel*progress,behavior:'instant'})},p);await page.waitForTimeout(1800)}
+async function at(page,p){await page.evaluate(progress=>{const m=window.__check92.snapshot().metrics;window.scrollTo({top:m.filmTop+m.filmTravel*progress,behavior:'instant'})},p);await page.waitForFunction(p=>Math.abs(window.__check92.snapshot().visualProgress-p)<.012,p,{timeout:30000});await page.waitForTimeout(500)}
 async function section(page,id){await page.evaluate(id=>window.scrollTo({top:document.querySelector(id).offsetTop-80,behavior:'instant'}),id);await page.waitForTimeout(900)}
 try{
  for(let i=0;i<3;i++){
@@ -27,7 +27,7 @@ try{
   await page.screenshot({path:path.join(out,name+'-01-showroom.png')});
   for(let i=0;i<3;i++){await page.locator(`[data-car="${i}"]`).click();await page.waitForTimeout(1350);assert.equal(await page.locator(`[data-car="${i}"]`).getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#brand-select').inputValue(),['PORSCHE','AUDI','BMW'][i]);await page.screenshot({path:path.join(out,name+'-car-'+i+'.png')})}
   report.checks.push(name+': all three distinct vehicle files loaded; selection and prefill work');
-  await page.locator('[data-car="0"]').click();await page.waitForTimeout(1100);await page.locator('#enter-story').click();await page.waitForTimeout(1800);assert.ok((await page.evaluate(()=>window.__check92.snapshot().approach))>.9);
+  await page.locator('[data-car="0"]').click();await page.waitForTimeout(1100);await page.locator('#enter-story').click();await page.waitForFunction(()=>window.__check92.snapshot().approach>.9,{}, {timeout:30000});
   for(const[label,p]of[['02-ecu-closed',.025],['03-ecu-open',.23],['04-macro',.39],['05-engine',.66],['06-reassembly',.83],['07-return',.97]]){await at(page,p);await page.screenshot({path:path.join(out,name+'-'+label+'.png')});report.states.push({name:name+'-'+label,...await page.evaluate(()=>window.__check92.snapshot())})}
   assert.equal(await page.evaluate(()=>window.__check92.snapshot().engineLoaded),true,'Engine loaded '+name);assert.ok(await page.evaluate(()=>window.__check92.snapshot().engineParts>=18),'Separate engine parts '+name);
   await at(page,.23);const open=await page.evaluate(()=>window.__check92.snapshot().ecuLid[1]);await at(page,0);const closed=await page.evaluate(()=>window.__check92.snapshot().ecuLid[1]);assert.ok(open-closed>1,'ECU reverse assembly '+name);report.checks.push(name+': scroll-controlled ECU opening, reverse assembly and 18-part engine');
@@ -43,5 +43,5 @@ try{
  }
  for(const p of[0,.025,.23,.39,.66,.83,.97,1])assert.deepEqual(deriveTimeline(p),deriveTimeline(p));assert.equal(deriveTimeline(1).engineOpen,0);assert.equal(carouselOffset(2,0),-1);report.checks.push('Pure reversible timeline and carousel invariants');
  report.status=report.errors.length?'passed-with-console-errors':'passed';if(report.errors.length)process.exitCode=1;
-}catch(error){report.status='failed';report.failure=String(error.stack||error);console.error(error);process.exitCode=1}
+}catch(error){report.status='failed';report.failure=String(error.stack||error);for(const c of browser.contexts())for(const p of c.pages()){try{report.states.push({name:'failure-state',...await p.evaluate(()=>window.__check92?.snapshot())});await p.screenshot({path:path.join(out,'failure-state.png'),timeout:10000})}catch{}}console.error(error);process.exitCode=1}
 finally{await fs.writeFile(path.join(out,'qa-report.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report,null,2));await browser.close()}

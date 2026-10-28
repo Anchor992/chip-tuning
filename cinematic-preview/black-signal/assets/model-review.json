@@ -1,0 +1,83 @@
+[
+  {
+    "id": "porsche-911-930",
+    "brand": "Porsche",
+    "model": "911 930",
+    "years": [
+      1975,
+      1975
+    ],
+    "category": "sports",
+    "file": "porsche-911-930.glb",
+    "bytes": 13975288,
+    "paint": {
+      "materials": [
+        "paint"
+      ],
+      "textured": false,
+      "confidence": "média"
+    },
+    "credit": {
+      "author": "Lionsharp Studios",
+      "authorUrl": "https://sketchfab.com/lionsharp",
+      "license": "CC Attribution",
+      "sourceName": "FREE 1975 Porsche 911 (930) Turbo",
+      "sourceUrl": "https://sketchfab.com/3d-models/none-8568d9d14a994b9cae59499f0dbed21e"
+    },
+    "mirrorCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+    "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/porsche-911-930.glb",
+    "sha256": "917335eba55814cb25217b3823aa303d57b63779934162bf73eb931a6803b8c2"
+  },
+  {
+    "id": "audi-r8",
+    "brand": "Audi",
+    "model": "R8",
+    "years": [
+      0,
+      0
+    ],
+    "category": "coupe",
+    "file": "audi-r8.glb",
+    "bytes": 4776028,
+    "paint": {
+      "materials": [
+        "body"
+      ],
+      "textured": false,
+      "confidence": "média"
+    },
+    "credit": {
+      "author": "wallon",
+      "authorUrl": "https://sketchfab.com/realwallon",
+      "license": "CC Attribution",
+      "sourceName": "Audi R8",
+      "sourceUrl": "https://sketchfab.com/3d-models/none-e17e438f076f4427a58d93aa779edaed"
+    },
+    "mirrorCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+    "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/audi-r8.glb",
+    "sha256": "627004f3b68fe3ab2917159d7798c22d125f32f1c6d5eb064c0f68947a02f20e"
+  },
+  {
+    "id": "bmw-m3-e30",
+    "brand": "BMW",
+    "model": "M3 E30",
+    "years": [
+      0,
+      0
+    ],
+    "category": "coupe",
+    "file": "bmw-m3-e30.glb",
+    "bytes": 9952032,
+    "paint": null,
+    "credit": {
+      "author": "Martin Trafas",
+      "authorUrl": "https://sketchfab.com/TinoD2",
+      "license": "CC Attribution",
+      "sourceName": "[FREE] BMW M3 E30",
+      "sourceUrl": "https://sketchfab.com/3d-models/none-ac3c7013434e403e8faff87948caf422"
+    },
+    "mirrorCommit": "2d18dfd9db96bbf0d9cffa949deaf7f571388cbf",
+    "download": "https://raw.githubusercontent.com/pedrosoandre/carros/2d18dfd9db96bbf0d9cffa949deaf7f571388cbf/assets/bmw-m3-e30.glb",
+    "sha256": "35cad98e89e6f1e54ccd238a3df049d29f20ecec3fc0aa2a85e0ad6c2663d330"
+  }
+]

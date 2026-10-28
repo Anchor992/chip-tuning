@@ -1,0 +1,38 @@
+[
+  {
+    "file": "porsche-911-930-mobile.glb",
+    "before": 13975288,
+    "after": 2117844,
+    "sha256": "5fd64399005a1a28cfc669845c3ce4451b9e3e0634b82cf6139da7d3ca0ef396"
+  },
+  {
+    "file": "porsche-911-930.glb",
+    "before": 13975288,
+    "after": 3678960,
+    "sha256": "865e6ffaf90c136ca1e3667ae801456ed96d309d723c9a9678f12cc2830ea223"
+  },
+  {
+    "file": "audi-r8-mobile.glb",
+    "before": 4776028,
+    "after": 1432604,
+    "sha256": "49b9df7eead54a844efef085822242a34d0d7b28dbcd4d65d50ed671c28e095a"
+  },
+  {
+    "file": "audi-r8.glb",
+    "before": 4776028,
+    "after": 1763280,
+    "sha256": "a466bea0f10e012ae8ee805b765f7aa10587530def7b12edf44a781ac1cd643c"
+  },
+  {
+    "file": "bmw-m3-e30-mobile.glb",
+    "before": 9952032,
+    "after": 1456396,
+    "sha256": "d5675831a2f28bb6967ede8260c8c8cece0e191d3f25e3dd8fd2fa72c14a891a"
+  },
+  {
+    "file": "bmw-m3-e30.glb",
+    "before": 9952032,
+    "after": 2366552,
+    "sha256": "a6b9109c6c2e08d79d1beae3c025a32d820036acf6325c82f13c7e98f80e6257"
+  }
+]
